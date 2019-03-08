@@ -27,15 +27,6 @@ class App(Gtk.Window):
 
 
 
-TEST_ARRAY = [
-[Gtk.Label("1"), Gtk.Label("2"), "50x50", Gtk.Label("3")],
-[Gtk.Label("4"), Gtk.Label("5"), Gtk.Label("6"), [Gtk.Label("a"),
-                                                 [Gtk.Label("b"), Gtk.Label("c")],
-                                                  Gtk.Label("d")]],
-[Gtk.Label("7"), Gtk.Label("8"), Gtk.Label("9")]
-]
-
-
 def AutoBox(big_list, vspacing = 5, hspacing = 15, orientation=Gtk.Orientation.VERTICAL):
     sub_orientation = 1 if orientation == 0 else 0
     box = Gtk.Box.new(orientation, vspacing if orientation==Gtk.Orientation.VERTICAL else hspacing)
@@ -237,25 +228,3 @@ class TextBox(Gtk.Box):
     @value.setter
     def value(self, new_value):
         self.text_buffer.set_text(new_value, -1)
-
-
-
-
-if __name__ == "__main__":
-
-    test_adjuster = Adjuster("Test Adjuster", 30, 0, 100, 5, 10)
-    test_adjuster2 = Adjuster("Test Adjuster2", 30, 0, 100, 5, 10, decimals = 1, slider=False)
-    test_check = CheckBox("Test Check Box", True)
-    test_drop_down= DropDown("Test Drop Down", [["Choice A", "A"], ["Choice B", "B"], ["Choice C", "C"]], "A", enums=True)
-    test_radio = RadioButtons("Test Radio Buttons", ["Choice A", "Choice B", "Choice C"], 0)
-    test_text_box = TextBox("Test Text Box", "Test Text\nLine 2")
-    def get_vals(widget):
-        for x in [test_adjuster, test_adjuster2, test_check, test_drop_down, test_radio, test_text_box]:
-            print(x.value)
-    execbutton = Gtk.Button("Execute")
-    execbutton.connect("clicked", get_vals)
-    test_app = App("Test App", AutoBox([
-        [test_adjuster, [[test_adjuster2, test_drop_down],test_radio]],
-        [test_text_box, [test_check, execbutton]]
-        ], orientation=Gtk.Orientation.HORIZONTAL))
-    test_app.launch()
