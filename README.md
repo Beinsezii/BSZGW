@@ -1,7 +1,7 @@
 # BSZGW
 BeinSeZii Gtk Wrapper
 
-Current status: Basic features usable with low expectations and a lot of caution. This is beginner-level Python, noob-level GTK, and almost incompetent-level git paired with unpredictable levels of development motivation.
+**Current status:** Basic features usable with low expectations and a lot of caution. This is beginner-level Python, noob-level GTK, and almost incompetent-level git paired with unpredictable levels of development motivation.
 
 ## Description
 The main purpose of this Python library is to simplify the creation and usage of many common GTK widgets.
@@ -13,11 +13,11 @@ The two main design points are (WIP warning):
 
 ## Features
 Current widgetes include
- * "Adjuster" - A combination of a slider and spinnbutton. Both can be enabled/disabled on creation.
- * "CheckBox" - Literally just a Gtk.CheckButton with the .value property and tooltip. Questionably useful.
- * "DropDown" - A Combo box that's easier to create. Can set return values independent of display options.
- * "RadioButtons" - A Box with a generated group of radio buttons. Functionally similar to DropDown
- * "TextBox" - A single or multi-line text entry box
+ * **"Adjuster"** - A combination of a slider and spinnbutton. Both can be enabled/disabled on creation.
+ * **"CheckBox"** - Literally just a Gtk.CheckButton with the .value property and tooltip. Questionably useful.
+ * **"DropDown"** - A Combo box that's easier to create. Can set return values independent of display options.
+ * **"RadioButtons"** - A Box with a generated group of radio buttons. Functionally similar to DropDown
+ * **"TextBox"** - A single or multi-line text entry box
 
 <img src="https://github.com/Beinsezii/BSZGW/blob/master/Example%20Apps/example_app_1.png" width="330">
 
@@ -25,7 +25,7 @@ Current widgetes include
 
 ### Experimental Features
 These features have severe problems in usability or practicality at the moment and are subject to scrapping, reformatting, or other major changes
- * "AutoBox" - Automatically generates a layout for apps using boxes. Apps are fed in via a multi-level list, with every "level" (sublist) switching the direction. So if you start off with horizontal orientation the list [[a, b],[c,d]] will create a layout looking like
+ * **"AutoBox"** - Automatically generates a layout for apps using boxes. Apps are fed in via a multi-level list, with every "level" (sublist) switching the direction. So if you start off with horizontal orientation the list [[a, b],[c,d]] will create a layout looking like
 ```
 a    c
 
@@ -41,7 +41,7 @@ Which can be visualized like
   The main [] is the initial horizontal box. (a,b) and {c,d} are vertical boxes inside the horizontal box. The orientation flipping can go on for any number of levels.
 Problem is it's nigh unreadable at a glance in the code unless the user gets very creative with their lists, which is extra effort and kinda defeats the point. On the bright side, it also has a mini-feature to accept strings like "50x50" to create blank spaces.
 
- * "App" - A class that takes a widget/container and turns it into a single-window app with a .launch() function. Questionably useful.
+ * **"App"** - A class that takes a widget/container and turns it into a single-window app with a .launch() function. Questionably useful.
 
 ## Development
 The previous offline development history was simply updating bszgw.py as I used it and thought of improvements. For now, I don't think that'll change, and as I'm not developing and graphical apps at the moment, it'll probably just recieve small updates to practice Github until I get the motivation to do otherwise.
@@ -56,6 +56,6 @@ One day for reasons I shall never disclose, I was making a script with a lot of 
 ## FAQ
 Question|Answer
 --------|------
-Q. Why is this Readme so long for an arguably useless library?|A. I'm trying to learn good git habits. *Trying*.
-Q. Okay but why not use something else to learn git with?|A. The only "useful" program I've made that isn't a hundred-line simple script that anyone could write in a few hours is something that I can never put on a public Git ever. However, that program uses BSZGW to work, so I figured "cool next best thing"
-Q. Do something more useful like a Tensowflow experiment.|A. Good question. See, that involves a lot of effort to learn. There's a reason why I put learning C on haitus after I reached pointers despite the app freezing nightmare that is Python.
+**Q.** Why is this Readme so long for an arguably useless library?|**A.** I'm trying to learn good git habits. *Trying*.
+**Q.** Okay but why not use something else to learn git with?|**A.** The only "useful" program I've made that isn't a hundred-line simple script that anyone could write in a few hours is something that I can never put on a public Git ever. However, that program uses BSZGW to work, so I figured "cool next best thing"
+**Q.** Do something more useful like a Tensowflow experiment.|**A.** Good question. See, that involves a lot of effort to learn. There's a reason why I put learning C on haitus after I reached pointers despite the app freezing nightmare that is Python.
