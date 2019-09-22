@@ -39,7 +39,7 @@ EXPERIMENTAL"""
 
     for x in big_list:
         if isinstance(x, (list, tuple)):
-            x = QuantumBox(x, vspacing, hspacing, sub_orientation)
+            x = AutoBox(x, vspacing, hspacing, sub_orientation)
 
         elif isinstance(x, str):
             dimensions = x.casefold().split('x')
