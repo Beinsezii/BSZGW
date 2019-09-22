@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 """MAIN STRING TODO"""
-from gi.repository import Gtk
 import gi
 gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 
 
@@ -49,7 +49,7 @@ EXPERIMENTAL"""
         if len(big_list) == 1:
             return x
 
-        if x != None:
+        if x is not None:
             box.pack_start(x, True, True, 0)
 
     if not box.get_children():
@@ -116,6 +116,29 @@ class Adjuster(Gtk.Box):
 
 
 
+class Button(Gtk.Button):
+    """Basically just a normal GTK button with connect() built in"""
+    def __init__(self, label, value, tooltip=None):
+        super(Button, self).__init__(label)
+        if tooltip:
+            self.set_tooltip_text(tooltip)
+        self.value = value
+
+    @property
+    def value(self):
+        pass
+
+    @value.setter
+    def value(self, new_value):
+        if callable(new_value):
+            self.connect("clicked", new_value)
+        else:
+            print(f"'{new_value}' not callable.")
+            raise ValueError
+
+
+
+
 class CheckBox(Gtk.CheckButton):
     """Basically just a normal GTK checkbutton with the 'value' property and other tiny additions.
 Possibly overkill."""
@@ -172,6 +195,14 @@ class DropDown(Gtk.ComboBoxText):
 
         else:
             self.set_active(new_value)
+
+
+
+
+def Message(message):
+    dialog = Gtk.MessageDialog(text=message, buttons=Gtk.ButtonsType.CLOSE)
+    dialog.run()
+    dialog.destroy()
 
 
 
