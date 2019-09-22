@@ -17,7 +17,7 @@ if __name__ == "__main__":
     execbutton = Gtk.Button("Execute")
     execbutton.connect("clicked", get_vals)
     test_app = bszgw.App("Test App", 
-        bszgw.AutoBox([
+        bszgw.QuantumBox([
             [test_adjuster,
             [[test_adjuster2,
             test_drop_down],test_radio]],
