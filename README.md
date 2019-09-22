@@ -25,7 +25,7 @@ Current widgetes include
 
 ### Experimental Features
 These features have severe problems in usability or practicality at the moment and are subject to scrapping, reformatting, or other major changes
- * **"QuantumBox"** - Automatically generates a layout for apps using boxes. Apps are fed in via a multi-level list, with every "level" (sublist) switching the direction. So if you start off with horizontal orientation the list [[a, b],[c,d]] will create a layout looking like
+ * **"AutoBox"** - Automatically generates a layout for apps using boxes. Apps are fed in via a multi-level list, with every "level" (sublist) switching the direction. So if you start off with horizontal orientation the list [[a, b],[c,d]] will create a layout looking like
 ```
 a    c
 

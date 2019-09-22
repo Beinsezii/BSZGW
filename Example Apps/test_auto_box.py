@@ -17,5 +17,5 @@ TEST_ARRAY = [
 ]
 
 if __name__ == "__main__":
-    box_test = bszgw.App("Quantum Box Test", bszgw.QuantumBox(TEST_ARRAY))
+    box_test = bszgw.App("Auto Box Test", bszgw.AutoBox(TEST_ARRAY))
     box_test.launch()

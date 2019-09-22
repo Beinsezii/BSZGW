@@ -31,7 +31,7 @@ EXPERIMENTAL"""
 
 
 
-def QuantumBox(big_list, vspacing = 5, hspacing = 15, orientation=Gtk.Orientation.VERTICAL):
+def AutoBox(big_list, vspacing = 5, hspacing = 15, orientation=Gtk.Orientation.VERTICAL):
     """DOCSTRING TODO
 EXPERIMENTAL"""
     sub_orientation = 1 if orientation == 0 else 0
@@ -54,15 +54,6 @@ EXPERIMENTAL"""
 
     if not box.get_children():
         return None
-
-    return box
-
-
-
-
-def AutoBox(big_list, vspacing = 5, hspacing = 15, orientation=Gtk.Orientation.VERTICAL):
-    """DOCSTRING TODO"""
-    return 'todo'
 
     return box
 
