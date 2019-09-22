@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 """A GTK simplifier."""
-import gi, bszgw
+import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+import bszgw
 
 
 TEST_ARRAY = [

@@ -2,7 +2,7 @@
 """MAIN STRING TODO"""
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 
 
 
@@ -10,10 +10,11 @@ from gi.repository import Gtk
 class App(Gtk.Window):
     """DOCSTRING TODO
 EXPERIMENTAL"""
-    def __init__(self, label, widget):
+    def __init__(self, label, widget, hint=Gdk.WindowTypeHint.NORMAL):
         super(App, self).__init__()
         self.connect("destroy", Gtk.main_quit)
         self.props.title = label
+        self.props.type_hint = hint
         self.add(widget)
 
     def launch(self, *prelaunch):
