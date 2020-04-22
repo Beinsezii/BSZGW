@@ -2,9 +2,9 @@
 """MAIN STRING TODO"""
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
-
-
+from gi.repository import Gtk
+gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk
 
 
 class App(Gtk.Window):
@@ -30,17 +30,25 @@ EXPERIMENTAL"""
         Gtk.main()
 
 
-
-
-def AutoBox(big_list, vspacing=5, hspacing=15, orientation=Gtk.Orientation.VERTICAL):
+def AutoBox(big_list, vspacing=5, hspacing=15,
+            orientation=Gtk.Orientation.VERTICAL):
     """DOCSTRING TODO
 EXPERIMENTAL"""
     sub_orientation = 1 if orientation == 0 else 0
-    box = Gtk.Box.new(orientation, vspacing if orientation == Gtk.Orientation.VERTICAL else hspacing)
+    box = Gtk.Box.new(
+        orientation,
+        vspacing if orientation == Gtk.Orientation.VERTICAL else hspacing
+    )
 
     for x in big_list:
-        if isinstance(x, (list, tuple)):
+        exp = True
+        fill = True
+        pad = 0
+        if isinstance(x, (list)):
             x = AutoBox(x, vspacing, hspacing, sub_orientation)
+
+        elif isinstance(x, (tuple)):
+            x, exp, fill, pad = x
 
         elif isinstance(x, str):
             dimensions = x.casefold().split('x')
@@ -51,7 +59,7 @@ EXPERIMENTAL"""
             return x
 
         if x is not None:
-            box.pack_start(x, True, True, 0)
+            box.pack_start(x, exp, fill, pad)
 
     if not box.get_children():
         return None
@@ -59,11 +67,12 @@ EXPERIMENTAL"""
     return box
 
 
-
-
 class Adjuster(Gtk.Box):
     """DOCSTRING TODO"""
-    def __init__(self, label, value, min_value, max_value, step_increment, page_increment, decimals=0, orientation=Gtk.Orientation.HORIZONTAL, tooltip=None, spinner=True, slider=True, slider_size=200):
+    def __init__(self, label,
+                 value, min_value, max_value, step_increment, page_increment,
+                 decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
+                 tooltip=None, spinner=True, slider=True, slider_size=200):
         super(Adjuster, self).__init__()
         self.decimals = decimals
         self.props.orientation = Gtk.Orientation.VERTICAL
@@ -71,12 +80,13 @@ class Adjuster(Gtk.Box):
         self.label = Gtk.Label.new(label)
         self.pack_start(self.label, False, True, 0)
 
-        self.adjustment = Gtk.Adjustment.new(value, min_value, max_value, step_increment, page_increment, 0)
         self.adjuster_box = Gtk.Box.new(orientation, 0)
         self.pack_start(self.adjuster_box, True, True, 0)
 
+        adjustment = Gtk.Adjustment.new(value, min_value, max_value,
+                                        step_increment, page_increment, 0)
         if slider:
-            self.slider = Gtk.Scale.new(orientation, self.adjustment)
+            self.slider = Gtk.Scale.new(orientation, adjustment)
             self.slider.props.draw_value = not spinner
             self.slider.props.digits = self.decimals
 
@@ -96,7 +106,8 @@ class Adjuster(Gtk.Box):
                 self.slider.props.tooltip_text = tooltip
 
         if spinner:
-            self.spinner = Gtk.SpinButton.new(self.adjustment, step_increment, self.decimals)
+            self.spinner = Gtk.SpinButton.new(adjustment, step_increment,
+                                              self.decimals)
             self.adjuster_box.pack_start(self.spinner, not slider, True, 0)
 
             if tooltip:
@@ -114,6 +125,19 @@ class Adjuster(Gtk.Box):
     def value(self, new_value):
         self.adjustment.props.value = new_value
 
+    @property
+    def adjustment(self):
+        if hasattr(self, 'spinner'):
+            return self.spinner.get_adjustment()
+        elif hasattr(self, 'slider'):
+            return self.slider.get_adjustment()
+
+    @adjustment.setter
+    def adjustment(self, new_adjust):
+        if hasattr(self, 'spinner'):
+            self.spinner.set_adjustment(new_adjust)
+        if hasattr(self, 'slider'):
+            self.slider.set_adjustment(new_adjust)
 
 
 class Button(Gtk.Button):
@@ -137,11 +161,9 @@ class Button(Gtk.Button):
             raise ValueError
 
 
-
-
 class CheckBox(Gtk.CheckButton):
-    """Basically just a normal GTK checkbutton with the 'value' property and other tiny additions.
-Possibly overkill."""
+    """Basically just a normal GTK checkbutton with the 'value' property
+and other tiny additions.  Possibly overkill."""
     def __init__(self, label, value, tooltip=None):
         super(CheckBox, self).__init__(label)
         if tooltip:
@@ -155,8 +177,6 @@ Possibly overkill."""
     @value.setter
     def value(self, new_value):
         self.set_active(new_value)
-
-
 
 
 class DropDown(Gtk.ComboBoxText):
@@ -197,19 +217,17 @@ class DropDown(Gtk.ComboBoxText):
             self.set_active(new_value)
 
 
-
-
 def Message(message):
     dialog = Gtk.MessageDialog(text=message, buttons=Gtk.ButtonsType.CLOSE)
     dialog.run()
     dialog.destroy()
 
 
-
-
 class RadioButtons(Gtk.Box):
     """DOCSTRING TODO"""
-    def __init__(self, label, buttons, value, orientation=Gtk.Orientation.VERTICAL, enums=False, tooltip=None):
+    def __init__(self, label, buttons, value,
+                 orientation=Gtk.Orientation.VERTICAL,
+                 enums=False, tooltip=None):
         assert len(buttons) > 1
         super(RadioButtons, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -259,8 +277,6 @@ class RadioButtons(Gtk.Box):
                 if self.radio_buttons.index(x) == new_value:
                     x.set_active(1)
                     return
-
-
 
 
 class TextBox(Gtk.Box):
