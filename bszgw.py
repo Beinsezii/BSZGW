@@ -32,11 +32,11 @@ EXPERIMENTAL"""
 
 
 
-def AutoBox(big_list, vspacing = 5, hspacing = 15, orientation=Gtk.Orientation.VERTICAL):
+def AutoBox(big_list, vspacing=5, hspacing=15, orientation=Gtk.Orientation.VERTICAL):
     """DOCSTRING TODO
 EXPERIMENTAL"""
     sub_orientation = 1 if orientation == 0 else 0
-    box = Gtk.Box.new(orientation, vspacing if orientation==Gtk.Orientation.VERTICAL else hspacing)
+    box = Gtk.Box.new(orientation, vspacing if orientation == Gtk.Orientation.VERTICAL else hspacing)
 
     for x in big_list:
         if isinstance(x, (list, tuple)):
@@ -105,15 +105,14 @@ class Adjuster(Gtk.Box):
     @property
     def value(self):
         if self.decimals > 0:
-            return float(f'%.{self.decimals}f'%(self.adjustment.props.value))
+            return float(f'%.{self.decimals}f' % (self.adjustment.props.value))
 
         else:
-            return int(f'%.{self.decimals}f'%(self.adjustment.props.value))
+            return int(f'%.{self.decimals}f' % (self.adjustment.props.value))
 
     @value.setter
     def value(self, new_value):
         self.adjustment.props.value = new_value
-
 
 
 
