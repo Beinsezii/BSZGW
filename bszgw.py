@@ -10,12 +10,15 @@ from gi.repository import Gdk
 class App(Gtk.Window):
     """DOCSTRING TODO
 EXPERIMENTAL"""
-    def __init__(self, label, widget, hint=Gdk.WindowTypeHint.NORMAL):
+    def __init__(self, label, widget, width=-1, height=-1,
+                 hint=Gdk.WindowTypeHint.NORMAL):
         super(App, self).__init__()
         self.connect("destroy", Gtk.main_quit)
         self.props.title = label
         self.props.type_hint = hint
         self.add(widget)
+        self.props.default_width = width
+        self.props.default_height = height
 
     def launch(self, *prelaunch):
         self.present()
@@ -44,10 +47,10 @@ EXPERIMENTAL"""
         exp = True
         fill = True
         pad = 0
-        if isinstance(x, (list)):
+        if isinstance(x, list):
             x = AutoBox(x, vspacing, hspacing, sub_orientation)
 
-        elif isinstance(x, (tuple)):
+        elif isinstance(x, tuple):
             x, exp, fill, pad = x
 
         elif isinstance(x, str):
@@ -189,7 +192,9 @@ class DropDown(Gtk.ComboBoxText):
             self.values = []
         for x in vals_list:
             if self.enums:
-                if not isinstance(x, (list, tuple)):
+                if isinstance(vals_list, dict):
+                    x = [x, vals_list[x]]
+                elif not isinstance(x, (list, tuple)):
                     x = [x, x]
                 self.values.append(x[1])
                 self.append_text(str(x[0]))
@@ -201,10 +206,8 @@ class DropDown(Gtk.ComboBoxText):
     def value(self):
         if self.get_active() == -1:
             return None
-
         if self.enums:
             return self.values[self.get_active()]
-
         else:
             return self.get_active()
 
@@ -212,7 +215,6 @@ class DropDown(Gtk.ComboBoxText):
     def value(self, new_value):
         if self.enums:
             self.set_active(self.values.index(new_value))
-
         else:
             self.set_active(new_value)
 
