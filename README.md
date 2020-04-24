@@ -28,17 +28,25 @@ Current widgetes include
 Each widget of Example App is created with one line of code
 
 ```python
-test_adjuster = bszgw.Adjuster("Test Adjuster", 30, 0, 100, 5, 10)
-test_adjuster2 = bszgw.Adjuster("Test Adjuster2", 30, 0, 100, 5, 10, decimals=1, slider=False)
+# Start val, min, max, increment, big/page increment.
+# Adjuster can also be built with a Gtk.Adjustment like normal with bszgw.Adjuster(label, adjustment)
+test_adjuster = bszgw.Adjuster.new("Test Adjuster", 30, 0, 100, 5, 10)
+test_adjuster2 = bszgw.Adjuster.new("Test Adjuster2", 30, 0, 100, 5, 10, decimals=1, slider=False)
+
 test_check = bszgw.CheckBox("Test Check Box", True)
+
 test_drop_down = bszgw.DropDown("Test Drop Down", [["Choice A", "A"], ["Choice B", "B"], ["Choice C", "C"]], "A", enums=True)
+
 test_radio = bszgw.RadioButtons("Test Radio Buttons", ["Choice A", "Choice B", "Choice C"], 0)
+
 test_text_box = bszgw.TextBox("Test Text Box", "Test Text\nLine 2")
+
+# yes I'm that lazy.
 exec_button = bszgw.Button("Execute", Your_Function_Here)
 ```
 
 ### Other Features
- * **"AutoBox"** - Automatically generates a layout for apps using boxes. Apps are fed in via a multi-level list, with every "level" (sublist) switching the direction.
+ * **"AutoBox"** - Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
  Again referring to Example App, the organization of the widgets goes as follows
  
  ```python
@@ -95,6 +103,4 @@ One day for reasons I shall never disclose, I was making a script with a lot of 
 ## FAQ
 Question|Answer
 --------|------
-**Q.** Why is this Readme so long for an arguably useless library?|**A.** I'm trying to learn good git habits. *Trying*.
-**Q.** Okay but why not use something else to learn git with?|**A.** The only "useful" program I've made that isn't a hundred-line simple script that anyone could write in a few hours is something that I can never put on a public Git ever. However, that program uses BSZGW to work, so I figured "cool next best thing"
 **Q.** Do something more useful like a Tensowflow experiment.|**A.** Good question. See, that involves a lot of effort to learn. There's a reason why I put learning C on haitus after I reached pointers.
