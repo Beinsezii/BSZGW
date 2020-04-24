@@ -144,12 +144,19 @@ as you get closer to higher values."""
         self.decimals = decimals
         self.adjustment = adjustment
 
-    def __log_update(self, *args):
+    def __set_main_log(self, *args):
         """Internal function runs when a logarithmic scale is changed,
-to update the non-logarithmic scale."""
+to update the spin button."""
         if self.__log:
             self.adjustment.props.value = \
                 self.__ls ** self.scale.get_adjustment().props.value
+
+    def __set_log_main(self, *args):
+        """Internal function runs when a spin button is changed,
+to update the logarithmic scale."""
+        if self.__log:
+            self.scale.get_adjustment().props.value = \
+                math.log(self.adjustment.props.value, self.__ls)
 
     @property
     def adjustment(self):
@@ -165,7 +172,7 @@ to update the non-logarithmic scale."""
             self.spin_button.set_adjustment(new_adjust)
         if hasattr(self, 'scale'):
             # if log, create a separate Gtk.Adjustment connected to
-            # __log_update()
+            # __set_main_log()
             if self.__log:
                 low = new_adjust.props.lower
                 # only log the lower limit if above 0
@@ -184,10 +191,12 @@ to update the non-logarithmic scale."""
                     page_increment=new_adjust.props.page_increment,
                     page_size=new_adjust.props.page_size
                 )
-                log_adjust.connect("value-changed", self.__log_update)
+                log_adjust.connect("value-changed", self.__set_main_log)
+                self.adjustment.connect("value-changed", self.__set_log_main)
                 self.scale.set_adjustment(log_adjust)
             else:
                 self.scale.set_adjustment(new_adjust)
+        self.__initial = self.value
 
     @property
     def decimals(self):
@@ -228,6 +237,9 @@ to update the non-logarithmic scale."""
                         step_increment, page_increment, 0),
                         decimals, orientation, tooltip, spin_button, scale,
                         spin_accel, logarithmic, log_scale, scale_min_size)
+
+    def reset(self):
+        self.value = self.__initial
 
 
 class Button(Gtk.Button):
