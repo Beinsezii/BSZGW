@@ -7,8 +7,8 @@ import bszgw
 
 if __name__ == "__main__":
     #Demonstrating various widgets. For more detail look in bszgw.py
-    test_adjuster = bszgw.Adjuster("Test Adjuster", 30, 0, 100, 5, 10)
-    test_adjuster2 = bszgw.Adjuster("Test Adjuster2", 30, 0, 100, 5, 10, decimals=1, slider=False)
+    test_adjuster = bszgw.Adjuster.new("Test Adjuster", 30, 0, 100, 5, 10)
+    test_adjuster2 = bszgw.Adjuster.new("Test Adjuster2", 30, 0, 100, 5, 10, decimals=1, spin_button=False)
     test_check = bszgw.CheckBox("Test Check Box", True)
     test_drop_down = bszgw.DropDown("Test Drop Down", [["Choice A", "A"], ["Choice B", "B"], ["Choice C", "C"]], "A", enums=True)
     test_radio = bszgw.RadioButtons("Test Radio Buttons", ["Choice A", "Choice B", "Choice C"], 0)

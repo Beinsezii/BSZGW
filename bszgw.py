@@ -5,6 +5,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk
+import math  # noqa: F401
 
 
 class App(Gtk.Window):
@@ -35,8 +36,7 @@ EXPERIMENTAL"""
 
 def AutoBox(big_list, vspacing=5, hspacing=15,
             orientation=Gtk.Orientation.VERTICAL):
-    """DOCSTRING TODO
-EXPERIMENTAL"""
+    """DOCSTRING TODO"""
     sub_orientation = 1 if orientation == 0 else 0
     box = Gtk.Box.new(
         orientation,
@@ -71,50 +71,137 @@ EXPERIMENTAL"""
 
 
 class Adjuster(Gtk.Box):
-    """DOCSTRING TODO"""
-    def __init__(self, label,
-                 value, min_value, max_value, step_increment, page_increment,
-                 decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
-                 tooltip=None, spinner=True, slider=True, slider_size=200):
+    """Widget for adjusting integers or floats.
+Adjuster() takes a label and Gtk.Adjustment,
+while Adjuster.new() builds a Gtk.Adjustment from values inputted.
+If logarithmic=True, the scale (slider)'s adjustment will be changed
+according to log(x, log_scale).  This means the scale will 'accelerate'
+as you get closer to higher values."""
+    def __init__(self,
+                 label: str,
+                 adjustment: Gtk.Adjustment,
+                 decimals: int = 0,
+                 orientation: Gtk.Orientation = Gtk.Orientation.HORIZONTAL,
+                 tooltip: str = None,
+                 spin_button: bool = True,
+                 scale: bool = True,
+                 spin_accel: float = 0.0,
+                 logarithmic: bool = False,
+                 log_scale: int = 2,
+                 scale_min_size: int = 200):
         super(Adjuster, self).__init__()
-        self.decimals = decimals
+
+        # Main box always vertical for label on top
         self.props.orientation = Gtk.Orientation.VERTICAL
 
+        # log is a one-stop shop. Must have both widgets and can't be reverted.
+        # probably possible to make it changeable-on-the-fly but I've written
+        # enough code for now.
+        assert spin_button or scale
+        if logarithmic:
+            assert spin_button and scale and log_scale > 1
+        self.__log = logarithmic
+        self.__ls = log_scale
+
+        # label doesn't grow
         self.label = Gtk.Label.new(label)
         self.pack_start(self.label, False, True, 0)
 
-        self.adjuster_box = Gtk.Box.new(orientation, 0)
-        self.pack_start(self.adjuster_box, True, True, 0)
+        adjuster_box = Gtk.Box.new(orientation, 0)
+        self.pack_start(adjuster_box, True, True, 0)
 
-        adjustment = Gtk.Adjustment.new(value, min_value, max_value,
-                                        step_increment, page_increment, 0)
-        if slider:
-            self.slider = Gtk.Scale.new(orientation, adjustment)
-            self.slider.props.draw_value = not spinner
-            self.slider.props.digits = self.decimals
+        if scale:
+            self.scale = Gtk.Scale.new(orientation, adjustment)
+            # disable value pop-up if spin_button used.
+            self.scale.props.draw_value = not spin_button
 
+            # min size request, either horizontally or vertically.
+            # I had one of my scales get compressed into a single pixel before
+            # so this is necessary
             if orientation == Gtk.Orientation.HORIZONTAL:
-                width = slider_size
+                width = scale_min_size
                 height = -1
 
             else:
-                self.slider.props.value_pos = Gtk.PositionType.LEFT
+                self.scale.props.value_pos = Gtk.PositionType.LEFT
                 width = -1
-                height = slider_size
+                height = scale_min_size
 
-            self.slider.set_size_request(width, height)
-            self.adjuster_box.pack_start(self.slider, True, True, 0)
-
-            if tooltip:
-                self.slider.props.tooltip_text = tooltip
-
-        if spinner:
-            self.spinner = Gtk.SpinButton.new(adjustment, step_increment,
-                                              self.decimals)
-            self.adjuster_box.pack_start(self.spinner, not slider, True, 0)
+            self.scale.set_size_request(width, height)
+            adjuster_box.pack_start(self.scale, True, True, 0)
 
             if tooltip:
-                self.spinner.props.tooltip_text = tooltip
+                self.scale.props.tooltip_text = tooltip
+
+        if spin_button:
+            self.spin_button = Gtk.SpinButton.new(adjustment, spin_accel, 0)
+            # if scale present, don't expand
+            adjuster_box.pack_start(self.spin_button, not scale, True, 0)
+
+            if tooltip:
+                self.spin_button.props.tooltip_text = tooltip
+
+        self.decimals = decimals
+        self.adjustment = adjustment
+
+    def __log_update(self, *args):
+        """Internal function runs when a logarithmic scale is changed,
+to update the non-logarithmic scale."""
+        if self.__log:
+            self.adjustment.props.value = \
+                self.__ls ** self.scale.get_adjustment().props.value
+
+    @property
+    def adjustment(self):
+        if hasattr(self, 'spin_button'):
+            return self.spin_button.get_adjustment()
+        elif hasattr(self, 'scale'):
+            return self.scale.get_adjustment()
+        # don't need log check.
+
+    @adjustment.setter
+    def adjustment(self, new_adjust):
+        if hasattr(self, 'spin_button'):
+            self.spin_button.set_adjustment(new_adjust)
+        if hasattr(self, 'scale'):
+            # if log, create a separate Gtk.Adjustment connected to
+            # __log_update()
+            if self.__log:
+                low = new_adjust.props.lower
+                # only log the lower limit if above 0
+                if low > 0:
+                    newlow = math.log(low, self.__ls)
+                else:
+                    newlow = low
+
+                # logs the upper, possibly lower (above), and value.
+                # to base self.__ls
+                log_adjust = Gtk.Adjustment.new(
+                    value=math.log(new_adjust.props.value, self.__ls),
+                    lower=newlow,
+                    upper=math.log(new_adjust.props.upper, self.__ls),
+                    step_increment=new_adjust.props.step_increment,
+                    page_increment=new_adjust.props.page_increment,
+                    page_size=new_adjust.props.page_size
+                )
+                log_adjust.connect("value-changed", self.__log_update)
+                self.scale.set_adjustment(log_adjust)
+            else:
+                self.scale.set_adjustment(new_adjust)
+
+    @property
+    def decimals(self):
+        if hasattr(self, 'spin_button'):
+            return self.spin_button.props.digits
+        elif hasattr(self, 'scale'):
+            return self.scale.props.digits
+
+    @decimals.setter
+    def decimals(self, new_decimals):
+        if hasattr(self, 'spin_button'):
+            self.spin_button.props.digits = new_decimals
+        if hasattr(self, 'scale'):
+            self.scale.props.digits = new_decimals
 
     @property
     def value(self):
@@ -127,20 +214,20 @@ class Adjuster(Gtk.Box):
     @value.setter
     def value(self, new_value):
         self.adjustment.props.value = new_value
+        if self.__log:
+            self.scale.get_adjustment().props.value = \
+                math.log(new_value, self.__ls)
 
-    @property
-    def adjustment(self):
-        if hasattr(self, 'spinner'):
-            return self.spinner.get_adjustment()
-        elif hasattr(self, 'slider'):
-            return self.slider.get_adjustment()
+    def new(label,
+            value, min_value, max_value, step_increment, page_increment,
+            decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
+            tooltip=None, spin_button=True, scale=True, spin_accel=0.0,
+            logarithmic=False, log_scale=2, scale_min_size=200):
 
-    @adjustment.setter
-    def adjustment(self, new_adjust):
-        if hasattr(self, 'spinner'):
-            self.spinner.set_adjustment(new_adjust)
-        if hasattr(self, 'slider'):
-            self.slider.set_adjustment(new_adjust)
+        return Adjuster(label, Gtk.Adjustment.new(value, min_value, max_value,
+                        step_increment, page_increment, 0),
+                        decimals, orientation, tooltip, spin_button, scale,
+                        spin_accel, logarithmic, log_scale, scale_min_size)
 
 
 class Button(Gtk.Button):

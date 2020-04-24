@@ -17,7 +17,7 @@ The main purpose of this Python library is to simplify the creation and usage of
 ## Features
 ### Widgets
 Current widgetes include
- * **"Adjuster"** - A combination of a slider and spinnbutton. Both can be enabled/disabled on creation.
+ * **"Adjuster"** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
  * **"Button"** - Create a button connected to a function in one line.
  * **"CheckBox"** - Literally just a Gtk.CheckButton with the .value property and tooltip.
  * **"DropDown"** - A Combo box that's easier to create. Can set return values independently of display options.
