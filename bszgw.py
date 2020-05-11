@@ -286,8 +286,8 @@ ComboBox/CellRenderer/TreeModel features but I'm not sure how to do that
 all in one or if it's even possible. Tempted to rename this ComboBoxText and
 just make new ComboBoxes for other types."""
     def __init__(self, model: Gtk.TreeModel, value,
-                 tooltip: str = None, column: int = 0, id_column: int = -1,
-                 wrap: int = 0):
+                 tooltip: str = None, column: int = 0, id_column: int = 0,
+                 show_ids=False, wrap: int = 0):
         super(ComboBox, self).__init__()
         if tooltip:
             self.set_tooltip_text(tooltip)
@@ -297,12 +297,12 @@ just make new ComboBoxes for other types."""
         self.pack_start(self.renderer, True)
         self.add_attribute(self.renderer, "text", column)
 
-        if id_column >= 0:
+        if show_ids:
             self.id_renderer = Gtk.CellRendererText()
             self.pack_start(self.id_renderer, True)
             self.add_attribute(self.id_renderer, "text", id_column)
 
-        self.set_wrap_width(0)
+        self.set_wrap_width(wrap)
         self.props.id_column = id_column
         self.value = value
 
@@ -317,9 +317,8 @@ Value types must be uniform among keys and among values"""
         for key in dictionary.keys():
             model.append((key, dictionary[key]))
 
-        return ComboBox(model, value,
-                        tooltip, id_column=1 if show_ids else -1,
-                        wrap=wrap)
+        return ComboBox(model, value, tooltip,
+                        id_column=1, show_ids=show_ids, wrap=wrap)
 
     @property
     def value(self):
