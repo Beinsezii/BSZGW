@@ -24,7 +24,7 @@ Current widgetes include
  * **"RadioButtons"** - A Box with a generated group of radio buttons. Functionally similar to DropDown
  * **"TextBox"** - A single or multi-line text entry box
 
-<img src="./Example Apps/example_app.png" width="300">
+<img src="./Example Apps/example_app.png" width="400">
 Each widget of Example App is created with one line of code
 
 ```python
