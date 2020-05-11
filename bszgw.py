@@ -100,8 +100,8 @@ as you get closer to higher values."""
         assert spin_button or scale
         if logarithmic:
             assert spin_button and scale and log_scale > 1
-        self.__log = logarithmic
-        self.__ls = log_scale
+        self.log = logarithmic
+        self.ls = log_scale
 
         # label doesn't grow
         self.label = Gtk.Label.new(label)
@@ -144,19 +144,19 @@ as you get closer to higher values."""
         self.decimals = decimals
         self.adjustment = adjustment
 
-    def __set_main_log(self, *args):
+    def set_main_log(self, *args):
         """Internal function runs when a logarithmic scale is changed,
 to update the spin button."""
-        if self.__log:
+        if self.log:
             self.adjustment.props.value = \
-                self.__ls ** self.scale.get_adjustment().props.value
+                self.ls ** self.scale.get_adjustment().props.value
 
-    def __set_log_main(self, *args):
+    def set_log_main(self, *args):
         """Internal function runs when a spin button is changed,
 to update the logarithmic scale."""
-        if self.__log:
+        if self.log:
             self.scale.get_adjustment().props.value = \
-                math.log(self.adjustment.props.value, self.__ls)
+                math.log(self.adjustment.props.value, self.ls)
 
     @property
     def adjustment(self):
@@ -172,31 +172,31 @@ to update the logarithmic scale."""
             self.spin_button.set_adjustment(new_adjust)
         if hasattr(self, 'scale'):
             # if log, create a separate Gtk.Adjustment connected to
-            # __set_main_log()
-            if self.__log:
+            # set_main_log()
+            if self.log:
                 low = new_adjust.props.lower
                 # only log the lower limit if above 0
                 if low > 0:
-                    newlow = math.log(low, self.__ls)
+                    newlow = math.log(low, self.ls)
                 else:
                     newlow = low
 
                 # logs the upper, possibly lower (above), and value.
-                # to base self.__ls
+                # to base self.ls
                 log_adjust = Gtk.Adjustment.new(
-                    value=math.log(new_adjust.props.value, self.__ls),
+                    value=math.log(new_adjust.props.value, self.ls),
                     lower=newlow,
-                    upper=math.log(new_adjust.props.upper, self.__ls),
+                    upper=math.log(new_adjust.props.upper, self.ls),
                     step_increment=new_adjust.props.step_increment,
                     page_increment=new_adjust.props.page_increment,
                     page_size=new_adjust.props.page_size
                 )
-                log_adjust.connect("value-changed", self.__set_main_log)
-                self.adjustment.connect("value-changed", self.__set_log_main)
+                log_adjust.connect("value-changed", self.set_main_log)
+                self.adjustment.connect("value-changed", self.set_log_main)
                 self.scale.set_adjustment(log_adjust)
             else:
                 self.scale.set_adjustment(new_adjust)
-        self.__initial = self.value
+        self.initial = self.value
 
     @property
     def decimals(self):
@@ -223,9 +223,9 @@ to update the logarithmic scale."""
     @value.setter
     def value(self, new_value):
         self.adjustment.props.value = new_value
-        if self.__log:
+        if self.log:
             self.scale.get_adjustment().props.value = \
-                math.log(new_value, self.__ls)
+                math.log(new_value, self.ls)
 
     def new(label,
             value, min_value, max_value, step_increment, page_increment,
@@ -239,27 +239,25 @@ to update the logarithmic scale."""
                         spin_accel, logarithmic, log_scale, scale_min_size)
 
     def reset(self):
-        self.value = self.__initial
+        self.value = self.initial
 
 
 class Button(Gtk.Button):
     """Basically just a normal GTK button with connect() built in"""
-    def __init__(self, label, value, tooltip=None):
+    def __init__(self, label, function, *args, tooltip=None):
         super(Button, self).__init__(label)
         if tooltip:
             self.set_tooltip_text(tooltip)
-        self.value = value
+        self.set_function(function, *args)
 
-    @property
-    def value(self):
-        pass
-
-    @value.setter
-    def value(self, new_value):
-        if callable(new_value):
-            self.connect("clicked", new_value)
+    def set_function(self, function, *args):
+        if callable(function):
+            if args:
+                self.connect("clicked", function, args)
+            else:
+                self.connect("clicked", function)
         else:
-            print(f"'{new_value}' not callable.")
+            print(f"'{function}' not callable.")
             raise ValueError
 
 
@@ -281,41 +279,55 @@ and other tiny additions.  Possibly overkill."""
         self.set_active(new_value)
 
 
-class DropDown(Gtk.ComboBoxText):
-    """DOCSTRING TODO"""
-    def __init__(self, tooltip, vals_list, value, enums=False):
-        super(DropDown, self).__init__()
-        self.enums = enums
-        self.set_tooltip_text(tooltip)
-        if self.enums:
-            self.values = []
-        for x in vals_list:
-            if self.enums:
-                if isinstance(vals_list, dict):
-                    x = [x, vals_list[x]]
-                elif not isinstance(x, (list, tuple)):
-                    x = [x, x]
-                self.values.append(x[1])
-                self.append_text(str(x[0]))
-            else:
-                self.append_text(str(x))
+class ComboBox(Gtk.ComboBox):
+    """Widget for selecting values in a drop-down list.
+Right now basically exclusively made for text. I want to implement more
+ComboBox/CellRenderer/TreeModel features but I'm not sure how to do that
+all in one or if it's even possible. Tempted to rename this ComboBoxText and
+just make new ComboBoxes for other types."""
+    def __init__(self, model: Gtk.TreeModel, value,
+                 tooltip: str = None, column: int = 0, id_column: int = -1,
+                 wrap: int = 0):
+        super(ComboBox, self).__init__()
+        if tooltip:
+            self.set_tooltip_text(tooltip)
+        self.props.model = model
+
+        self.renderer = Gtk.CellRendererText()
+        self.pack_start(self.renderer, True)
+        self.add_attribute(self.renderer, "text", column)
+
+        if id_column >= 0:
+            self.id_renderer = Gtk.CellRendererText()
+            self.pack_start(self.id_renderer, True)
+            self.add_attribute(self.id_renderer, "text", id_column)
+
+        self.set_wrap_width(0)
+        self.props.id_column = id_column
         self.value = value
+
+    def new(dictionary: dict, value,
+            tooltip: str = None, show_ids: bool = True, wrap: int = 0):
+        """Creates a new ComboBox from a dictionary.
+Value types must be uniform among keys and among values"""
+        # is there a better way to get the first key and val?
+        key_type = type(list(dictionary)[0])
+        val_type = type(dictionary[list(dictionary)[0]])
+        model = Gtk.ListStore(key_type, val_type)
+        for key in dictionary.keys():
+            model.append((key, dictionary[key]))
+
+        return ComboBox(model, value,
+                        tooltip, id_column=1 if show_ids else -1,
+                        wrap=wrap)
 
     @property
     def value(self):
-        if self.get_active() == -1:
-            return None
-        if self.enums:
-            return self.values[self.get_active()]
-        else:
-            return self.get_active()
+        return self.props.active_id
 
     @value.setter
     def value(self, new_value):
-        if self.enums:
-            self.set_active(self.values.index(new_value))
-        else:
-            self.set_active(new_value)
+        self.props.active_id = new_value
 
 
 def Message(message):
