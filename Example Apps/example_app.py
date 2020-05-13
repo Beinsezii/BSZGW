@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import gi
+gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk  # noqa: F401
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk  # noqa: F401
 import bszgw
 
 
@@ -40,35 +42,42 @@ Text Box =
 
     exec_button = bszgw.Button("Execute", get_vals)
 
-    adjuster2_dropdown = bszgw.AutoBox([
-        adjuster2,
-        combo_box
-    ])
+    grid = bszgw.Grid()
+    GC = bszgw.GridChild
 
-    left_side = bszgw.AutoBox([
-        adjuster,
-        [adjuster2_dropdown, radio_buttons]
-    ])
+    grid.attach_all(
+        GC(adjuster, width=2),
+        adjuster2, GC(radio_buttons, col_off=1, height=2),
+        combo_box,
+    )
 
-    right_side = bszgw.AutoBox([
-        text_box,
-        [check_button, exec_button]
-    ])
+    # nothing stopping you from using GridChild to attach these all at once
+    # but I think it looks nicer this way.
+    grid.attach_all(
+        GC(text_box, width=2, height=2),
+        check_button, GC(exec_button, col_off=1),
+        column=3
+    )
 
-    final_box = bszgw.AutoBox([left_side, right_side],
-                              orientation=Gtk.Orientation.HORIZONTAL)
+    # AutoBox version:
 
-    # What creating the final box would look like all on one call.
-    # Same result as above
+    # adjuster2_combobox = bszgw.AutoBox([
+    #     adjuster2,
+    #     combo_box
+    # ])
 
-    # final_box = bszgw.AutoBox([
-    #     [adjuster,
-    #     [[adjuster2,
-    #     drop_down], radio]],
-    #     [text_box,
-    #     [check, exec_button]]
-    #     ], orientation=Gtk.Orientation.HORIZONTAL)
+    # left_side = bszgw.AutoBox([
+    #     adjuster,
+    #     [adjuster2_dropdown, radio_buttons]
+    # ])
 
-    app = bszgw.App("App", final_box, hint=Gdk.WindowTypeHint.DIALOG)
+    # right_side = bszgw.AutoBox([
+    #     text_box,
+    #     [check_button, exec_button]
+    # ])
+
+    # box = bszgw.AutoBox([[left_side, right_side]])
+
+    app = bszgw.App("App Name", grid, hint=Gdk.WindowTypeHint.DIALOG)
 
     app.launch()

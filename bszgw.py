@@ -1,11 +1,35 @@
 #!/usr/bin/python3
-"""MAIN STRING TODO"""
+# -*- coding: utf-8 -*-
+
+"""BeinSeZii Gtk Wrapper
+Provides replacements for common GTK widgets intended to make dialog and
+simple program creation take significantly less effort. Basically I got tired
+of 70% of my lines being UI code and thought 'how can I be lazier'
+
+Brief overview:
+ - Data-entry widgets *all* have a read/write 'value' property and
+   (eventually will) have reset() methods.
+ - Tooltips for everything, labels where it makes sense.
+ - Widgets are created more 'artistically'
+   - Widgets can be created on initialization with common properties as kwargs.
+   - The 'new()' method, if present, will create a fully functional widget
+     entirely from regular Python types, generating buffers/models as needed.
+     Create an entire ComboBox from a dict!
+"""
+
+
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk
-import math  # noqa: F401
+import math
+
+
+# TODO:
+# Everyone needs reset methods, expand properties, and type hinted args.
+# Possible to create an abstract class and still inherit from Gtk widgets?
+# Settle on App's scope and move it out of experimental as I use it a lot.
 
 
 class App(Gtk.Window):
@@ -34,35 +58,31 @@ EXPERIMENTAL"""
         Gtk.main()
 
 
-def AutoBox(big_list, vspacing=5, hspacing=15,
-            orientation=Gtk.Orientation.VERTICAL):
-    """DOCSTRING TODO"""
-    sub_orientation = 1 if orientation == 0 else 0
+def AutoBox(widgets: list, vspacing=10, hspacing=10, orientation=1) -> Gtk.Box:
+    """Automatically packs widgets into a box with recursion depth.
+Every sub-list inside the main widgets list flips packing orientation.
+This allows you to visually build your boxes:
+[
+ [a, b, c]
+     d,
+     e,
+]"""
+
     box = Gtk.Box.new(
         orientation,
         vspacing if orientation == Gtk.Orientation.VERTICAL else hspacing
     )
 
-    for x in big_list:
-        exp = True
-        fill = True
-        pad = 0
+    sub_orientation = 1 - orientation
+    for x in widgets:
         if isinstance(x, list):
             x = AutoBox(x, vspacing, hspacing, sub_orientation)
 
-        elif isinstance(x, tuple):
-            x, exp, fill, pad = x
-
-        elif isinstance(x, str):
-            dimensions = x.casefold().split('x')
-            x = Gtk.Label.new(None)
-            x.set_size_request(int(dimensions[0]), int(dimensions[1]))
-
-        if len(big_list) == 1:
+        if len(widgets) == 1:
             return x
 
-        if x is not None:
-            box.pack_start(x, exp, fill, pad)
+        if isinstance(x, Gtk.Widget):
+            box.pack_start(x, True, True, 0)
 
     if not box.get_children():
         return None
@@ -83,12 +103,14 @@ as you get closer to higher values."""
                  decimals: int = 0,
                  orientation: Gtk.Orientation = Gtk.Orientation.HORIZONTAL,
                  tooltip: str = None,
+                 expand=True,
                  spin_button: bool = True,
                  scale: bool = True,
                  spin_accel: float = 0.0,
                  logarithmic: bool = False,
                  log_scale: int = 2,
-                 scale_min_size: int = 200):
+                 scale_min_size: int = 200,
+                 ):
         super(Adjuster, self).__init__()
 
         # Main box always vertical for label on top
@@ -143,6 +165,7 @@ as you get closer to higher values."""
 
         self.decimals = decimals
         self.adjustment = adjustment
+        self.expand = expand
 
     def set_main_log(self, *args):
         """Internal function runs when a logarithmic scale is changed,
@@ -157,6 +180,32 @@ to update the logarithmic scale."""
         if self.log:
             self.scale.get_adjustment().props.value = \
                 math.log(self.adjustment.props.value, self.ls)
+
+    def new(label,
+            value, min_value, max_value, step_increment, page_increment,
+            decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
+            tooltip=None, spin_button=True, scale=True, expand=True,
+            spin_accel=0.0, logarithmic=False, log_scale=2,
+            scale_min_size=200):
+
+        return Adjuster(
+            label=label,
+            adjustment=Gtk.Adjustment.new(value, min_value, max_value,
+                                          step_increment, page_increment, 0),
+            decimals=decimals,
+            orientation=orientation,
+            tooltip=tooltip,
+            expand=expand,
+            spin_button=spin_button,
+            scale=scale,
+            spin_accel=spin_accel,
+            logarithmic=logarithmic,
+            log_scale=log_scale,
+            scale_min_size=scale_min_size,
+        )
+
+    def reset(self):
+        self.value = self.initial
 
     @property
     def adjustment(self):
@@ -213,6 +262,24 @@ to update the logarithmic scale."""
             self.scale.props.digits = new_decimals
 
     @property
+    def expand(self):
+        return self.__expand
+
+    @expand.setter
+    def expand(self, expand: bool):
+        if hasattr(self, 'scale'):
+            if self.scale.props.orientation == Gtk.Orientation.HORIZONTAL:
+                self.scale.props.hexpand = expand
+                self.scale.props.vexpand = False
+            else:
+                self.scale.props.vexpand = expand
+                self.scale.props.hexpand = False
+
+        elif hasattr(self, 'spin_button'):
+            self.spin_button.props.hexpand = expand
+        self.__expand = expand
+
+    @property
     def value(self):
         if self.decimals > 0:
             return float(f'%.{self.decimals}f' % (self.adjustment.props.value))
@@ -226,20 +293,6 @@ to update the logarithmic scale."""
         if self.log:
             self.scale.get_adjustment().props.value = \
                 math.log(new_value, self.ls)
-
-    def new(label,
-            value, min_value, max_value, step_increment, page_increment,
-            decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
-            tooltip=None, spin_button=True, scale=True, spin_accel=0.0,
-            logarithmic=False, log_scale=2, scale_min_size=200):
-
-        return Adjuster(label, Gtk.Adjustment.new(value, min_value, max_value,
-                        step_increment, page_increment, 0),
-                        decimals, orientation, tooltip, spin_button, scale,
-                        spin_accel, logarithmic, log_scale, scale_min_size)
-
-    def reset(self):
-        self.value = self.initial
 
 
 class Button(Gtk.Button):
@@ -287,8 +340,9 @@ all in one or if it's even possible. Tempted to rename this ComboBoxText and
 just make new ComboBoxes for other types."""
     def __init__(self, model: Gtk.TreeModel, value,
                  tooltip: str = None, column: int = 0, id_column: int = 0,
-                 show_ids=False, wrap: int = 0):
+                 expand: bool = True, show_ids: bool = False, wrap: int = 0):
         super(ComboBox, self).__init__()
+
         if tooltip:
             self.set_tooltip_text(tooltip)
         self.props.model = model
@@ -305,9 +359,12 @@ just make new ComboBoxes for other types."""
         self.set_wrap_width(wrap)
         self.props.id_column = id_column
         self.value = value
+        self.initial_value = value
+        self.expand = expand
 
     def new(dictionary: dict, value,
-            tooltip: str = None, show_ids: bool = True, wrap: int = 0):
+            tooltip: str = None, expand: bool = True,
+            show_ids: bool = True, wrap: int = 0):
         """Creates a new ComboBox from a dictionary.
 Value types must be uniform among keys and among values"""
         # is there a better way to get the first key and val?
@@ -317,8 +374,22 @@ Value types must be uniform among keys and among values"""
         for key in dictionary.keys():
             model.append((key, dictionary[key]))
 
-        return ComboBox(model, value, tooltip,
-                        id_column=1, show_ids=show_ids, wrap=wrap)
+        return ComboBox(
+            model=model, value=value, tooltip=tooltip, expand=expand,
+            id_column=1, show_ids=show_ids, wrap=wrap,
+        )
+
+    def reset(self):
+        self.value = self.initial_value
+
+    @property
+    def expand(self):
+        return self.__expand
+
+    @expand.setter
+    def expand(self, expand):
+        self.props.hexpand = expand
+        self.__expand = expand
 
     @property
     def value(self):
@@ -329,8 +400,96 @@ Value types must be uniform among keys and among values"""
         self.props.active_id = new_value
 
 
+class GridChild():
+    """GridChild can be given to bszgw.Grid's multi-widget functions in place of
+regular widgets. This allows the child to have many custom placement properties
+in a relatively compact fashion.
+
+col_off, row_off: offsets for column and row.
+width, height: if not None, overrides default dimension[s] when attaching."""
+    def __init__(
+        self, widget: Gtk.Widget,
+        col_off: int = 0, row_off: int = 0,
+        width: int = None, height: int = None,
+    ):
+        self.widget = widget
+        self.col_off = col_off
+        self.row_off = row_off
+        self.width = width
+        self.height = height
+
+
+class Grid(Gtk.Grid):
+    """Gtk.Grid with easier widget attachment functions.
+Also has some common props in init."""
+    def __init__(self,
+                 column_spacing: int = 10, row_spacing: int = 10,
+                 column_homogeneous: bool = False,
+                 row_homogeneous: bool = False):
+        super(Gtk.Grid, self).__init__()
+        self.props.column_spacing = column_spacing
+        self.props.row_spacing = row_spacing
+        self.props.column_homogeneous = column_homogeneous
+        self.props.row_homogeneous = row_homogeneous
+
+    def attach_all(self, *children,  # noqa: C901 Really? Only like 30 lines...
+                   column: int = 0, row: int = 0,
+                   base_width: int = 1, base_height: int = 1,
+                   direction: Gtk.DirectionType = Gtk.DirectionType.DOWN):
+        """Attaches multiple children at once.
+
+children: must be either instance of Gtk.Widget or bszgw.GridChild
+column and row: starting coordinates.
+base_width and base_height: size of widgets if not specified in GridChild
+direction: direction to 'push' widgets when they try to occupy the same space.
+Note all children's coords start at column, row instead of starting from the
+previous child's place."""
+
+        for child in children:
+            # for automation purposes.
+            if child is None:
+                continue
+
+            if isinstance(child, Gtk.Widget):
+                child = GridChild(child)
+
+            if not isinstance(child, GridChild):
+                raise TypeError(f"Child {child} is not an instance of "
+                                "Gtk.Widget or GridChild")
+
+            if child.width is None:
+                child.width = base_width
+            if child.height is None:
+                child.height = base_height
+
+            left = column + child.col_off
+            top = row + child.row_off
+
+            # collision detection.
+            # increment a grid cell in orientation if occupied
+            # if there's a use case where widgets should be over
+            # other widgets that should be done manually.
+            while True:
+                if not self.get_child_at(left, top):
+                    break
+                if direction == Gtk.DirectionType.DOWN:
+                    top += 1
+                elif direction == Gtk.DirectionType.RIGHT:
+                    left += 1
+                elif direction == Gtk.DirectionType.UP:
+                    top -= 1
+                elif direction == Gtk.DirectionType.LEFT:
+                    left -= 1
+                else:
+                    raise TypeError("Invalid direction")
+
+            self.attach(child.widget, left, top, child.width, child.height)
+
+
 def Message(message):
-    dialog = Gtk.MessageDialog(text=message, buttons=Gtk.ButtonsType.CLOSE)
+    """Opens a pop-op displaying a message."""
+    dialog = Gtk.MessageDialog(text=str(message),
+                               buttons=Gtk.ButtonsType.CLOSE)
     dialog.run()
     dialog.destroy()
 
@@ -393,7 +552,8 @@ class RadioButtons(Gtk.Box):
 
 class TextBox(Gtk.Box):
     """DOCSTRING TODO"""
-    def __init__(self, label, value, multi_line=True, size="200x100"):
+    def __init__(self, label, value,
+                 multi_line=True, expand: bool = True, size="200x100"):
         super(TextBox, self).__init__()
         self.multi_line = multi_line
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -417,6 +577,16 @@ class TextBox(Gtk.Box):
             self.scroll_box.set_min_content_height(int(sizes[1]))
 
         self.value = value
+        self.expand = expand
+
+    @property
+    def expand(self):
+        return self.__expand
+
+    @expand.setter
+    def expand(self, expand):
+        self.scroll_box.props.expand = expand
+        self.__expand = expand
 
     @property
     def value(self):

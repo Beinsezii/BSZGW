@@ -3,16 +3,22 @@
 Making the creation of GTK applications so simple, you'll think "wow, I just took a hour and a half python course on YouTube and am very underqualified for what I am trying to do, but now I can at least hide my crazy spaghetti code behind some fancy buttons that I don't understand at any fundamental level. this is amazing"
 
 ### Current Status
-Features usable with low expectations.
+Features usable with low expectations. Breaking changes basically every relatively important commit.
 
 ## Description
-The main purpose of this Python library is to simplify the creation and usage of many common GTK widgets.
+Provides replacements for common GTK widgets intended to make dialog and
+simple program creation take significantly less effort. Basically I got tired
+of 70% of my lines being UI code and thought 'how can I be lazier'
 
-### Main Design Goals
- * Widgets' values (text in a text box, selected option in a radio list, etc) are always get and set with the .value property
- * Creation of a widget usually uses nothing more than starting values
- * Include common features like tooltips and labels as creation options
- * Probably more to come (notably space reservation)
+Brief overview:
+ - Data-entry widgets *all* have a read/write 'value' property and
+   (eventually will) have reset() methods.
+ - Tooltips for everything, labels where it makes sense.
+ - Widgets are created more 'artistically'
+   - Widgets can be created on initialization with common properties as kwargs.
+   - The 'new()' method, if present, will create a fully functional widget
+     entirely from regular Python types, generating buffers/models as needed.
+     Create an entire ComboBox from a dict!
 
 ## Features
 ### Widgets
@@ -55,7 +61,7 @@ text_box = bszgw.TextBox("Text Box", "Text\nLine 2")
 exec_button = bszgw.Button("Execute", Your_Function_Here)
 ```
 
-### Other Features
+### Containers & Other Features
  * **"AutoBox"** - Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
  Again referring to Example App, the organization of the widgets goes as follows
  
@@ -78,25 +84,39 @@ right_side = bszgw.AutoBox([
 final_box = bszgw.AutoBox([left_side, right_side],
                           orientation=Gtk.Orientation.HORIZONTAL)
  ```
-This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does.
 
-However, AutoBox supports any amount of 'depth' via lists *inside* lists, with each level of 'depth' switching orientation. The same code above can be re-written into something that's much smaller but also very hard to visualize. Questionably useful.
-```python
-final_box = bszgw.AutoBox([
-    [adjuster,
-    [[adjuster2,
-    drop_down], radio]],
-    [text_box,
-    [check, exec_button]]
-    ], orientation=Gtk.Orientation.HORIZONTAL)
-```
-Note you can also simply put the main list inside a list instead of manually switching the orientation, like [[widgets are horizontal now]], but I prefer setting the orientation property for readability.
+This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does.
+However, AutoBox supports any amount of 'depth' via lists *inside* lists, with each level of 'depth' switching orientation. Questionably useful, as readability drops off immensely.
+
+ - **"Grid"** - Gtk.Grid with extra methods for attaching widgets.
+   - **"GridChild"** - Can be substituted in Grid's new methods in place of regular widgets. Contains additional properties to influence placement.
+
+ The example app's layout looks like 
+ ```python
+grid = bszgw.Grid()
+GC = bszgw.GridChild
+
+grid.attach_all(
+    GC(adjuster, width=2),
+    adjuster2, GC(radio_buttons, col_off=1, height=2),
+    combo_box,
+)
+
+# nothing stopping you from using GridChild to attach these all at once
+# but I think it looks nicer this way.
+grid.attach_all(
+    GC(text_box, width=2, height=2),
+    check_button, GC(exec_button, col_off=1),
+    column=3
+)
+ ```
+
 ### Experimental Features
 These features are still in conceptual stages and subject to many many reformats.
 * **"App"** - A class that takes a widget/container and turns it into a single-window app with a .launch() function.
 In Example App, the code to create the interactable window with the widget layout is only two lines
 ```python
-app = bszgw.App("Test App", final_box)
+app = bszgw.App("App Name", grid)
 app.launch()
 ```
 
