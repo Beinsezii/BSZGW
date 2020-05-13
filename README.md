@@ -81,8 +81,9 @@ right_side = bszgw.AutoBox([
     [check_button, exec_button]
 ])
 
-final_box = bszgw.AutoBox([left_side, right_side],
-                          orientation=Gtk.Orientation.HORIZONTAL)
+final_box = bszgw.AutoBox([
+    [left_side, right_side],
+])
  ```
 
 This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does.
