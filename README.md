@@ -20,15 +20,13 @@ Brief overview:
      entirely from regular Python types, generating buffers/models as needed.
      Create an entire ComboBox from a dict!
 
-## Features
-### Widgets
-Current widgetes include
- - **"Adjuster"** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
- - **"Button"** - Create a button connected to a function in one line.
- - **"CheckBox"** - Literally just a Gtk.CheckButton with the .value property and tooltip.
- - **"ComboBox"** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
- - **"RadioButtons"** - A Box with a generated group of radio buttons. Functionally similar to DropDown
- - **"TextBox"** - A single or multi-line text entry box
+## Widgets
+ - **Adjuster** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
+ - **Button** - Create a button connected to a function in one line.
+ - **CheckBox** - Literally just a Gtk.CheckButton with the .value property and tooltip.
+ - **ComboBox** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
+ - **RadioButtons** - A Box with a generated group of radio buttons. Functionally similar to DropDown
+ - **TextBox** - A single or multi-line text entry box
 
 <img src="./Example Apps/example_app.png" width="400">
 Each widget of Example App is created with one line of code
@@ -61,11 +59,13 @@ text_box = bszgw.TextBox("Text Box", "Text\nLine 2")
 exec_button = bszgw.Button("Execute", Your_Function_Here)
 ```
 
-### Containers & Other Features
- - **"AutoBox"** - Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
- Again referring to Example App, the organization of the widgets goes as follows
+## Containers & Other Features
+### AutoBox
+Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
+
+Again referring to Example App, the organization of the widgets goes as follows
  
- ```python
+```python
 adjuster2_dropdown = bszgw.AutoBox([
     adjuster2,
     combo_box
@@ -84,13 +84,12 @@ right_side = bszgw.AutoBox([
 final_box = bszgw.AutoBox([
     [left_side, right_side],
 ])
- ```
+```
+This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does. AutoBox also supports any amount of 'depth' via lists *inside* lists, with each level of 'depth' switching orientation. Questionably useful, as readability drops off immensely.
 
-This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does.
-However, AutoBox supports any amount of 'depth' via lists *inside* lists, with each level of 'depth' switching orientation. Questionably useful, as readability drops off immensely.
-
- - **"Grid"** - Gtk.Grid with extra methods for attaching widgets.
-   - **"GridChild"** - Can be substituted in Grid's new methods in place of regular widgets. Contains additional properties to influence placement.
+### Grid
+Gtk.Grid with extra methods for attaching widgets.
+ - **GridChild** - Can be substituted in Grid's new methods in place of regular widgets. Contains additional properties to influence placement.
 
  The example app's layout looks like 
  ```python
@@ -111,12 +110,15 @@ grid.attach_all(
     column=3
 )
  ```
+ 
+### Message
+Function that simply opens a pop-up displaying a message. Possible expansion. 
 
-- **"Message"** - Function that simply opens a pop-up displaying a message. Possible expansion. 
-
-### Experimental Features
+## Experimental Features
 These features are still in conceptual stages and subject to many many reformats.
-- **"App"** - A class that takes a widget/container and turns it into a single-window app with a .launch() function.
+### App
+A class that takes a widget/container and turns it into a single-window app with a .launch() function.
+
 In Example App, the code to create the interactable window with the widget layout is only two lines
 ```python
 app = bszgw.App("App Name", grid)
@@ -124,14 +126,14 @@ app.launch()
 ```
 
 ## Development
-The previous offline development history was simply updating bszgw.py as I used it and thought of improvements. Future development will basically be the exact same thing except I push updates to git so I can be harshly judged by people.
+The previous offline development history was simply updating bszgw.py as I used it and thought of improvements. Future development will basically be the exact same thing except I push updates to git so I can disappoint people.
 
 ## History
 It's part of my vast collection of unreleased python scripts and utilities sitting around.
 
-It initially started years ago in as a "core file" to share common info between my GIMP 2.8 scripts. Eventually my scripts outgrew what GIMP's automated script UI builder could do, so I started making my own, and realized I should keep common widgets in my "core library", too. Fast-forward to GIMP 2.10 and the library contained a "Beinsezii" version of every one of almost all of GIMPs default available widgets.
+It initially started years ago in as a "core file" to share common info between my GIMP 2.8 scripts. Eventually my scripts outgrew what GIMP's automated script UI builder could do, so I started making my own, and realized I should keep common widgets in my "core library", too. Fast-forward to GIMP 2.10 and the library contained a "Beinsezii" version of every one of almost all of GIMPs/GTK2s common widgets.
 
-One day for reasons I shall never disclose, I was making a script with a lot of input parameters that was atrocious to use in the terminal, so I decided to try and make a GTK 3 app instead and ported over some of the more important, non-gimp-specific widgets from my old core library to GTK 3.
+One day I was making a script with a lot of input parameters that was atrocious to use in the terminal, so I decided to try and make a GTK 3 app instead and ported over some of the more important, non-gimp-specific widgets from my old core library to GTK 3.
 
 ## FAQ
 Question|Answer
