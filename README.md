@@ -23,12 +23,12 @@ Brief overview:
 ## Features
 ### Widgets
 Current widgetes include
- * **"Adjuster"** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
- * **"Button"** - Create a button connected to a function in one line.
- * **"CheckBox"** - Literally just a Gtk.CheckButton with the .value property and tooltip.
- * **"ComboBox"** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
- * **"RadioButtons"** - A Box with a generated group of radio buttons. Functionally similar to DropDown
- * **"TextBox"** - A single or multi-line text entry box
+ - **"Adjuster"** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
+ - **"Button"** - Create a button connected to a function in one line.
+ - **"CheckBox"** - Literally just a Gtk.CheckButton with the .value property and tooltip.
+ - **"ComboBox"** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
+ - **"RadioButtons"** - A Box with a generated group of radio buttons. Functionally similar to DropDown
+ - **"TextBox"** - A single or multi-line text entry box
 
 <img src="./Example Apps/example_app.png" width="400">
 Each widget of Example App is created with one line of code
@@ -62,7 +62,7 @@ exec_button = bszgw.Button("Execute", Your_Function_Here)
 ```
 
 ### Containers & Other Features
- * **"AutoBox"** - Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
+ - **"AutoBox"** - Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
  Again referring to Example App, the organization of the widgets goes as follows
  
  ```python
@@ -111,9 +111,11 @@ grid.attach_all(
 )
  ```
 
+- **"Message"** - Function that simply opens a pop-up displaying a message. Possible expansion. 
+
 ### Experimental Features
 These features are still in conceptual stages and subject to many many reformats.
-* **"App"** - A class that takes a widget/container and turns it into a single-window app with a .launch() function.
+- **"App"** - A class that takes a widget/container and turns it into a single-window app with a .launch() function.
 In Example App, the code to create the interactable window with the widget layout is only two lines
 ```python
 app = bszgw.App("App Name", grid)
