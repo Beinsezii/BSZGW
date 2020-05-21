@@ -81,9 +81,7 @@ right_side = bszgw.AutoBox([
     [check_button, exec_button]
 ])
 
-final_box = bszgw.AutoBox([
-    [left_side, right_side],
-])
+box = bszgw.AutoBox([[left_side, right_side]])
 ```
 This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does. AutoBox also supports any amount of 'depth' via lists *inside* lists, with each level of 'depth' switching orientation. Questionably useful, as readability drops off immensely.
 
@@ -94,6 +92,8 @@ Gtk.Grid with extra methods for attaching widgets.
  The example app's layout looks like 
  ```python
 grid = bszgw.Grid()
+# GridChild just packs a widget with some extra properties for
+# adding to the grid
 GC = bszgw.GridChild
 
 grid.attach_all(

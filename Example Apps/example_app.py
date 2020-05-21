@@ -26,7 +26,7 @@ if __name__ == "__main__":
         ["Choice A", "Choice B", "Choice C"], 0
     )
 
-    text_box = bszgw.Entry("Entry", "Text\nLine 2")
+    entry = bszgw.Entry("Entry", "Text\nLine 2")
 
     # Functions called by buttons get sent the button itself
     # as the first variable.
@@ -35,14 +35,16 @@ if __name__ == "__main__":
         bszgw.Message(f"""Adjuster = {adjuster.value}
 Adjuster2 = {adjuster2.value}
 Check = {check_button.value}
-Drop Down = {combo_box.value}
+Combo Box = {combo_box.value}
 Radio Buttons = {radio_buttons.value}
-Text Box =
-{text_box.value}""")
+Entry =
+{entry.value}""")
 
     exec_button = bszgw.Button("Execute", get_vals)
 
-    grid = bszgw.Grid()
+    grid = bszgw.Gri()
+    # GridChild just packs a widget with some extra properties for
+    # adding to the grid
     GC = bszgw.GridChild
 
     grid.attach_all(
@@ -54,25 +56,25 @@ Text Box =
     # nothing stopping you from using GridChild to attach these all at once
     # but I think it looks nicer this way.
     grid.attach_all(
-        GC(text_box, width=2, height=2),
+        GC(entry, width=2, height=2),
         check_button, GC(exec_button, col_off=1),
         column=3
     )
 
     # AutoBox version:
 
-    # adjuster2_combobox = bszgw.AutoBox([
+    # adjuster2_combo = bszgw.AutoBox([
     #     adjuster2,
     #     combo_box
     # ])
 
     # left_side = bszgw.AutoBox([
     #     adjuster,
-    #     [adjuster2_dropdown, radio_buttons]
+    #     [adjuster2_combo, radio_buttons]
     # ])
 
     # right_side = bszgw.AutoBox([
-    #     text_box,
+    #     entry,
     #     [check_button, exec_button]
     # ])
 
