@@ -26,7 +26,7 @@ if __name__ == "__main__":
         ["Choice A", "Choice B", "Choice C"], 0
     )
 
-    text_box = bszgw.TextBox("Text Box", "Text\nLine 2")
+    text_box = bszgw.Entry("Entry", "Text\nLine 2")
 
     # Functions called by buttons get sent the button itself
     # as the first variable.

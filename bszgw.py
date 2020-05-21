@@ -172,13 +172,13 @@ as you get closer to higher values."""
 to update the spin button."""
         if self.log:
             self.adjustment.props.value = \
-                self.ls ** self.scale.get_adjustment().props.value
+                self.ls ** self.scale.props.adjustment.props.value
 
     def set_log_main(self, *args):
         """Internal function runs when a spin button is changed,
 to update the logarithmic scale."""
         if self.log:
-            self.scale.get_adjustment().props.value = \
+            self.scale.props.adjustment.props.value = \
                 math.log(self.adjustment.props.value, self.ls)
 
     def new(label,
@@ -210,9 +210,9 @@ to update the logarithmic scale."""
     @property
     def adjustment(self):
         if hasattr(self, 'spin_button'):
-            return self.spin_button.get_adjustment()
+            return self.spin_button.props.adjustment
         elif hasattr(self, 'scale'):
-            return self.scale.get_adjustment()
+            return self.scale.props.adjustment
         # don't need log check.
 
     @adjustment.setter
@@ -242,9 +242,9 @@ to update the logarithmic scale."""
                 )
                 log_adjust.connect("value-changed", self.set_main_log)
                 self.adjustment.connect("value-changed", self.set_log_main)
-                self.scale.set_adjustment(log_adjust)
+                self.scale.props.adjustment = log_adjust
             else:
-                self.scale.set_adjustment(new_adjust)
+                self.scale.adjustment = new_adjust
         self.initial = self.value
 
     @property
@@ -291,7 +291,7 @@ to update the logarithmic scale."""
     def value(self, new_value):
         self.adjustment.props.value = new_value
         if self.log:
-            self.scale.get_adjustment().props.value = \
+            self.scale.props.adjustment.props.value = \
                 math.log(new_value, self.ls)
 
 
@@ -300,7 +300,7 @@ class Button(Gtk.Button):
     def __init__(self, label, function, *args, tooltip=None):
         super(Button, self).__init__(label)
         if tooltip:
-            self.set_tooltip_text(tooltip)
+            self.props.tooltip_text = tooltip
         self.set_function(function, *args)
 
     def set_function(self, function, *args):
@@ -320,7 +320,7 @@ and other tiny additions.  Possibly overkill."""
     def __init__(self, label, value, tooltip=None):
         super(CheckBox, self).__init__(label)
         if tooltip:
-            self.set_tooltip_text(tooltip)
+            self.set_tooltip_text = tooltip
         self.value = value
 
     @property
@@ -344,7 +344,7 @@ just make new ComboBoxes for other types."""
         super(ComboBox, self).__init__()
 
         if tooltip:
-            self.set_tooltip_text(tooltip)
+            self.props.tooltip_text = tooltip
         self.props.model = model
 
         self.renderer = Gtk.CellRendererText()
@@ -356,7 +356,7 @@ just make new ComboBoxes for other types."""
             self.pack_start(self.id_renderer, True)
             self.add_attribute(self.id_renderer, "text", id_column)
 
-        self.set_wrap_width(wrap)
+        self.props.wrap_width = wrap
         self.props.id_column = id_column
         self.value = value
         self.initial_value = value
@@ -398,6 +398,86 @@ Value types must be uniform among keys and among values"""
     @value.setter
     def value(self, new_value):
         self.props.active_id = new_value
+
+
+class Entry(Gtk.Box):
+    """Creates a scrollable text entry widget.
+For self.entry, multi-line uses Gtk.TextView and single-line uses Gtk.Entry.
+No .new() method, as the widgets create their own buffers on creation.
+Use the text_buffer property to set new buffers instead."""
+    def __init__(self, label, value,
+                 multi_line=True, expand: bool = True,
+                 min_width=200, min_height=100):
+        super(Entry, self).__init__()
+
+        self.__multi_line = multi_line
+        self.props.orientation = Gtk.Orientation.VERTICAL
+        self.label = Gtk.Label.new(label)
+        self.pack_start(self.label, False, True, 0)
+
+        self.scrolled_window = Gtk.ScrolledWindow.new(None, None)
+        self.pack_start(self.scrolled_window, True, True, 0)
+
+        if self.__multi_line:
+            self.entry = Gtk.TextView.new()
+
+        else:
+            self.entry = Gtk.Entry.new()
+            self.scrolled_window.props.vscrollbar_policy = Gtk.PolicyType.NEVER
+
+        self.scrolled_window.add(self.entry)
+
+        self.value = value
+        self.expand = expand
+        self.min_width = min_width
+        self.min_height = min_height
+
+    @property
+    def expand(self):
+        return self.__expand
+
+    @expand.setter
+    def expand(self, expand):
+        if self.__multi_line:
+            self.scrolled_window.props.expand = expand
+        else:
+            self.scrolled_window.props.hexpand = expand
+        self.__expand = expand
+
+    @property
+    def min_height(self):
+        return self.__min_height
+
+    @min_height.setter
+    def min_height(self, min_height):
+        if self.__multi_line:
+            self.scrolled_window.props.min_content_height = min_height
+        self.__min_height = min_height
+
+    @property
+    def min_width(self):
+        return self.__min_width
+
+    @min_width.setter
+    def min_width(self, min_width):
+        self.scrolled_window.props.min_content_width = min_width
+        self.__min_width = min_width
+
+    @property
+    def text_buffer(self):
+        return self.entry.props.buffer
+
+    @text_buffer.setter
+    def text_buffer(self, text_buffer):
+        self.entry.props.buffer = text_buffer
+
+    @property
+    def value(self):
+        return self.text_buffer.props.text
+
+    @value.setter
+    def value(self, new_value):
+        self.text_buffer.props.text = new_value
 
 
 class GridChild():
@@ -522,7 +602,7 @@ class RadioButtons(Gtk.Box):
                 self.values.append(var[1])
 
             if tooltip:
-                self.radio_buttons[num].set_tooltip_text(tooltip)
+                self.radio_buttons[num].props.tooltip_text = tooltip
 
         self.value = value
 
@@ -548,55 +628,3 @@ class RadioButtons(Gtk.Box):
                 if self.radio_buttons.index(x) == new_value:
                     x.set_active(1)
                     return
-
-
-class TextBox(Gtk.Box):
-    """DOCSTRING TODO"""
-    def __init__(self, label, value,
-                 multi_line=True, expand: bool = True, size="200x100"):
-        super(TextBox, self).__init__()
-        self.multi_line = multi_line
-        self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.label = Gtk.Label.new(label)
-        self.pack_start(self.label, False, True, 0)
-
-        if self.multi_line:
-            self.text_box = Gtk.TextView.new()
-
-        else:
-            self.text_box = Gtk.Entry.new()
-
-        self.text_buffer = self.text_box.get_buffer()
-        self.scroll_box = Gtk.ScrolledWindow.new(None, None)
-        self.scroll_box.add(self.text_box)
-        self.pack_start(self.scroll_box, True, True, 0)
-        sizes = size.casefold().split("x")
-        self.scroll_box.set_min_content_width(int(sizes[0]))
-
-        if self.multi_line:
-            self.scroll_box.set_min_content_height(int(sizes[1]))
-
-        self.value = value
-        self.expand = expand
-
-    @property
-    def expand(self):
-        return self.__expand
-
-    @expand.setter
-    def expand(self, expand):
-        self.scroll_box.props.expand = expand
-        self.__expand = expand
-
-    @property
-    def value(self):
-        if self.multi_line:
-            bounds = self.text_buffer.get_bounds()
-            return self.text_buffer.get_text(bounds[0], bounds[1], True)
-
-        else:
-            return self.text_buffer.get_text()
-
-    @value.setter
-    def value(self, new_value):
-        self.text_buffer.set_text(new_value, -1)
