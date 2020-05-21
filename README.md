@@ -25,8 +25,8 @@ Brief overview:
  - **Button** - Create a button connected to a function in one line.
  - **CheckBox** - Literally just a Gtk.CheckButton with the .value property and tooltip.
  - **ComboBox** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
- - **RadioButtons** - A Box with a generated group of radio buttons. Functionally similar to DropDown
- - **TextBox** - A single or multi-line text entry box
+ - **Entry** - A single or multi-line text entry box
+ - **RadioButtons** - A Box with a generated group of radio buttons.
 
 <img src="./Example Apps/example_app.png" width="400">
 Each widget of Example App is created with one line of code
@@ -53,7 +53,7 @@ radio_buttons = bszgw.RadioButtons(
     ["Choice A", "Choice B", "Choice C"], 0
 )
 
-text_box = bszgw.TextBox("Text Box", "Text\nLine 2")
+entry = bszgw.Entry("Entry", "Text\nLine 2")
 
 # yes I'm this lazy.
 exec_button = bszgw.Button("Execute", Your_Function_Here)
@@ -66,18 +66,18 @@ Automatically generates a layout for apps using boxes. Widgets are fed in via a 
 Again referring to Example App, the organization of the widgets goes as follows
  
 ```python
-adjuster2_dropdown = bszgw.AutoBox([
+adjuster2_combo = bszgw.AutoBox([
     adjuster2,
     combo_box
 ])
 
 left_side = bszgw.AutoBox([
     adjuster,
-    [adjuster2_dropdown, radio_buttons]
+    [adjuster2_combo, radio_buttons]
 ])
 
 right_side = bszgw.AutoBox([
-    text_box,
+    entry,
     [check_button, exec_button]
 ])
 
@@ -105,7 +105,7 @@ grid.attach_all(
 # nothing stopping you from using GridChild to attach these all at once
 # but I think it looks nicer this way.
 grid.attach_all(
-    GC(text_box, width=2, height=2),
+    GC(entry, width=2, height=2),
     check_button, GC(exec_button, col_off=1),
     column=3
 )
