@@ -42,7 +42,7 @@ Entry =
 
     exec_button = bszgw.Button("Execute", get_vals)
 
-    grid = bszgw.Gri()
+    grid = bszgw.Grid()
     # GridChild just packs a widget with some extra properties for
     # adding to the grid
     GC = bszgw.GridChild
