@@ -14,7 +14,7 @@ if __name__ == "__main__":
     adjuster2 = bszgw.Adjuster.new("Adjuster2", 30, 0, 100, 5, 10,
                                    scale=False)
 
-    check_button = bszgw.CheckBox("Check Box", True)
+    check_button = bszgw.CheckButton("Check Button", True)
 
     combo_box = bszgw.ComboBox.new(
         {"Choice A": "a", "Choice B": "b", "Choice C": "c"}, "a",
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     def get_vals(widget):
         bszgw.Message(f"""Adjuster = {adjuster.value}
 Adjuster2 = {adjuster2.value}
-Check = {check_button.value}
+Check Button = {check_button.value}
 Combo Box = {combo_box.value}
 Radio Buttons = {radio_buttons.value}
 Entry =

@@ -314,14 +314,24 @@ class Button(Gtk.Button):
             raise ValueError
 
 
-class CheckBox(Gtk.CheckButton):
+class CheckButton(Gtk.CheckButton):
     """Basically just a normal GTK checkbutton with the 'value' property
 and other tiny additions.  Possibly overkill."""
-    def __init__(self, label, value, tooltip=None):
-        super(CheckBox, self).__init__(label)
+    def __init__(self, label, value, tooltip=None, expand: bool = False):
+        super(CheckButton, self).__init__(label)
         if tooltip:
             self.set_tooltip_text = tooltip
         self.value = value
+        self.expand = expand
+
+    @property
+    def expand(self):
+        return self.__expand
+
+    @expand.setter
+    def expand(self, expand):
+        self.props.expand = expand
+        self.__expand = expand
 
     @property
     def value(self):

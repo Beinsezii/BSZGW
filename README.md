@@ -23,7 +23,7 @@ Brief overview:
 ## Widgets
  - **Adjuster** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
  - **Button** - Create a button connected to a function in one line.
- - **CheckBox** - Literally just a Gtk.CheckButton with the .value property and tooltip.
+ - **CheckButton** - Literally just a Gtk.CheckButton with the .value property extras.
  - **ComboBox** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
  - **Entry** - A single or multi-line text entry box
  - **RadioButtons** - A Box with a generated group of radio buttons.
@@ -39,7 +39,7 @@ adjuster = bszgw.Adjuster.new("Adjuster", 30, 0, 1000, 5, 10,
 adjuster2 = bszgw.Adjuster.new("Adjuster2", 30, 0, 100, 5, 10,
                                scale=False)
 
-check_button = bszgw.CheckBox("Check Box", True)
+check_button = bszgw.CheckButton("Check Button", True)
 
 # Can be built with a dict using ComboBox.new(), or a Gtk.TreeModel using ComboBox()
 # Sort of a WIP, as right now it's only useful for text.
