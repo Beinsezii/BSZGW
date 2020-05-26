@@ -334,12 +334,11 @@ and other tiny additions.  Possibly overkill."""
 
     @property
     def tooltip(self):
-        return self.__tooltip
+        return self.props.tooltip_text
 
     @tooltip.setter
     def tooltip(self, new):
         self.props.tooltip_text = new
-        self.__tooltip = new
 
     @property
     def value(self):
@@ -423,7 +422,7 @@ class Entry(Gtk.Box):
 For self.entry, multi-line uses Gtk.TextView and single-line uses Gtk.Entry.
 No .new() method, as the widgets create their own buffers on creation.
 Use the text_buffer property to set new buffers instead."""
-    def __init__(self, label, value,
+    def __init__(self, label, value, tooltip: str = None,
                  multi_line=True, expand: bool = True,
                  min_width=200, min_height=100):
         super(Entry, self).__init__()
@@ -445,10 +444,11 @@ Use the text_buffer property to set new buffers instead."""
 
         self.scrolled_window.add(self.entry)
 
-        self.value = value
         self.expand = expand
         self.min_width = min_width
         self.min_height = min_height
+        self.tooltip = tooltip
+        self.value = value
 
     @property
     def expand(self):
@@ -488,6 +488,14 @@ Use the text_buffer property to set new buffers instead."""
     @text_buffer.setter
     def text_buffer(self, text_buffer):
         self.entry.props.buffer = text_buffer
+
+    @property
+    def tooltip(self):
+        return self.entry.props.tooltip_text
+
+    @tooltip.setter
+    def tooltip(self, new):
+        self.entry.props.tooltip_text = new
 
     @property
     def value(self):
