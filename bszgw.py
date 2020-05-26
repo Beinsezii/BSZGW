@@ -23,13 +23,75 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk
+import abc
 import math
 
 
 # TODO:
-# Everyone needs reset methods, expand properties, and type hinted args.
-# Possible to create an abstract class and still inherit from Gtk widgets?
-# Settle on App's scope and move it out of experimental as I use it a lot.
+# Settle on App's scope and move it out of experimental
+
+
+class WidgetMixIn(metaclass=abc.ABCMeta):
+    """Mix-in abstract class providing various properties for BSZGW widgets."""
+    def __init__(self, expand: bool = True, tooltip: str = ""):
+        self.expand = expand
+        self.tooltip = tooltip
+
+    @property
+    def expand(self):
+        """'Smart' expand to fill containers."""
+        return self.props.expand
+
+    @expand.setter
+    def expand(self, value: bool):
+        self.props.expand = value
+
+    @property
+    def tooltip(self):
+        """Tooltip for widget."""
+        return self.props.tooltip_text
+
+    @tooltip.setter
+    def tooltip(self, value):
+        self.props.tooltip_text = value
+
+
+class DataWidgetMixIn(WidgetMixIn):
+    """Mix-in absctract class additional properties and methods on top of
+WidgetMixIn designed for data-entry fields."""
+    def __init__(self, value, expand: bool = True, tooltip: str = ""):
+        super().__init__(expand=expand, tooltip=tooltip)
+        self.value = value
+        self.__reset_value = value
+
+    @abc.abstractmethod
+    def connect_value_changed(self, function: callable, *args):
+        """Connects to the widget's value change signal."""
+        pass
+
+    def reset(self):
+        self.value = self.__reset_value
+
+    @property
+    @abc.abstractmethod
+    def value(self):
+        """Value of the main data field."""
+        pass
+
+    @value.setter
+    @abc.abstractmethod
+    def value(self, value):
+        pass
+
+
+class WidgetMixInMeta(abc.ABCMeta, gi.types.GObjectMeta):
+    """Metaclass combines ABCMeta and GObjectMeta. Checks abstractmethods."""
+    def __init__(self, *args, **kwargs):
+        super(WidgetMixInMeta, self).__init__(*args, **kwargs)
+        if self.__abstractmethods__:  # thank stackoverflow for this one
+            raise TypeError(
+                "{} has not implemented abstract methods {}".format(
+                    self.__name__, ", ".join(self.__abstractmethods__)))
 
 
 class App(Gtk.Window):
@@ -295,58 +357,33 @@ to update the logarithmic scale."""
                 math.log(new_value, self.ls)
 
 
-class Button(Gtk.Button):
-    """Basically just a normal GTK button with connect() built in"""
-    def __init__(self, label, function, *args, tooltip=None):
-        super(Button, self).__init__(label)
-        if tooltip:
-            self.props.tooltip_text = tooltip
-        self.set_function(function, *args)
-
-    def set_function(self, function, *args):
-        if callable(function):
-            if args:
-                self.connect("clicked", function, args)
-            else:
-                self.connect("clicked", function)
-        else:
-            print(f"'{function}' not callable.")
-            raise ValueError
+class Button(Gtk.Button, WidgetMixIn, metaclass=WidgetMixInMeta):
+    """Gtk.Button. Has connect('clicked') built-in."""
+    def __init__(self, label, function, *args,
+                 tooltip=None, expand: bool = False):
+        super(Button, self).__init__(label=label)
+        WidgetMixIn.__init__(self, expand=expand, tooltip=tooltip)
+        self.connect('clicked', function, *args if args else ())
 
 
-class CheckButton(Gtk.CheckButton):
+class CheckButton(Gtk.CheckButton, DataWidgetMixIn, metaclass=WidgetMixInMeta):
     """Basically just a normal GTK checkbutton with the 'value' property
 and other tiny additions.  Possibly overkill."""
     def __init__(self, label, value, tooltip=None, expand: bool = False):
-        super(CheckButton, self).__init__(label)
-        self.expand = expand
-        self.tooltip = tooltip
-        self.value = value
+        super().__init__(label=label)
+        DataWidgetMixIn.__init__(self, value=value, expand=expand,
+                                 tooltip=tooltip)
 
-    @property
-    def expand(self):
-        return self.__expand
-
-    @expand.setter
-    def expand(self, expand):
-        self.props.expand = expand
-        self.__expand = expand
-
-    @property
-    def tooltip(self):
-        return self.props.tooltip_text
-
-    @tooltip.setter
-    def tooltip(self, new):
-        self.props.tooltip_text = new
+    def connect_value_changed(self, function, *args):
+        self.connect("toggled", function, *args if args else ())
 
     @property
     def value(self):
-        return self.get_active()
+        return self.props.active
 
     @value.setter
-    def value(self, new_value):
-        self.set_active(new_value)
+    def value(self, value):
+        self.props.active = value
 
 
 class ComboBox(Gtk.ComboBox):
