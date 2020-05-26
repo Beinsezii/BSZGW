@@ -319,10 +319,9 @@ class CheckButton(Gtk.CheckButton):
 and other tiny additions.  Possibly overkill."""
     def __init__(self, label, value, tooltip=None, expand: bool = False):
         super(CheckButton, self).__init__(label)
-        if tooltip:
-            self.set_tooltip_text = tooltip
-        self.value = value
         self.expand = expand
+        self.tooltip = tooltip
+        self.value = value
 
     @property
     def expand(self):
@@ -332,6 +331,15 @@ and other tiny additions.  Possibly overkill."""
     def expand(self, expand):
         self.props.expand = expand
         self.__expand = expand
+
+    @property
+    def tooltip(self):
+        return self.__tooltip
+
+    @tooltip.setter
+    def tooltip(self, new):
+        self.props.tooltip_text = new
+        self.__tooltip = new
 
     @property
     def value(self):
