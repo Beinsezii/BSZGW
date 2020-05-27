@@ -34,6 +34,7 @@ import math
 class WidgetMixIn(metaclass=abc.ABCMeta):
     """Mix-in abstract class providing various properties for BSZGW widgets."""
     def __init__(self, expand: bool = True, tooltip: str = ""):
+        """Shorthand way to set initial settings."""
         self.expand = expand
         self.tooltip = tooltip
 
@@ -60,9 +61,11 @@ class DataWidgetMixIn(WidgetMixIn):
     """Mix-in absctract class additional properties and methods on top of
 WidgetMixIn designed for data-entry fields."""
     def __init__(self, value, expand: bool = True, tooltip: str = ""):
+        """Shorthand way to set initial settings.
+Also sets reset_value used in reset()"""
         super().__init__(expand=expand, tooltip=tooltip)
         self.value = value
-        self.__reset_value = value
+        self.reset_value = value
 
     @abc.abstractmethod
     def connect_value_changed(self, function: callable, *args):
@@ -70,7 +73,7 @@ WidgetMixIn designed for data-entry fields."""
         pass
 
     def reset(self):
-        self.value = self.__reset_value
+        self.value = self.reset_value
 
     @property
     @abc.abstractmethod
