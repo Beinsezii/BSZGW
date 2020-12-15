@@ -31,6 +31,9 @@ import math
 # Settle on App's scope and move it out of experimental
 
 
+# ### MIX-INS ### #
+
+
 class WidgetMixIn(GObject.Object):
     """Mix-in providing various properties for BSZGW widgets."""
     def __init__(self, tooltip: str = ""):
@@ -72,6 +75,9 @@ Also sets reset_value used in reset()"""
     @value.setter
     def value(self, value):
         raise NotImplementedError
+
+
+# ### CONTAINER TYPES ### #
 
 
 class App(Gtk.Window):
@@ -130,6 +136,95 @@ This allows you to visually build your boxes:
         return None
 
     return box
+
+
+class GridChild():
+    """GridChild can be given to bszgw.Grid's multi-widget functions in place of
+regular widgets. This allows the child to have many custom placement properties
+in a relatively compact fashion.
+
+col_off, row_off: offsets for column and row.
+width, height: if not None, overrides default dimension[s] when attaching."""
+    def __init__(
+        self, widget: Gtk.Widget,
+        col_off: int = 0, row_off: int = 0,
+        width: int = None, height: int = None,
+    ):
+        self.widget = widget
+        self.col_off = col_off
+        self.row_off = row_off
+        self.width = width
+        self.height = height
+
+
+class Grid(Gtk.Grid):
+    """Gtk.Grid with easier widget attachment functions.
+Also has some common props in init."""
+    def __init__(self,
+                 column_spacing: int = 10, row_spacing: int = 10,
+                 column_homogeneous: bool = False,
+                 row_homogeneous: bool = False):
+        super(Gtk.Grid, self).__init__()
+        self.props.column_spacing = column_spacing
+        self.props.row_spacing = row_spacing
+        self.props.column_homogeneous = column_homogeneous
+        self.props.row_homogeneous = row_homogeneous
+
+    def attach_all(self, *children,  # noqa: C901 Really? Only like 30 lines...
+                   column: int = 0, row: int = 0,
+                   base_width: int = 1, base_height: int = 1,
+                   direction: Gtk.DirectionType = Gtk.DirectionType.DOWN):
+        """Attaches multiple children at once.
+
+children: must be either instance of Gtk.Widget or bszgw.GridChild
+column and row: starting coordinates.
+base_width and base_height: size of widgets if not specified in GridChild
+direction: direction to 'push' widgets when they try to occupy the same space.
+Note all children's coords start at column, row instead of starting from the
+previous child's place."""
+
+        for child in children:
+            # for automation purposes.
+            if child is None:
+                continue
+
+            if isinstance(child, Gtk.Widget):
+                child = GridChild(child)
+
+            if not isinstance(child, GridChild):
+                raise TypeError(f"Child {child} is not an instance of "
+                                "Gtk.Widget or GridChild")
+
+            if child.width is None:
+                child.width = base_width
+            if child.height is None:
+                child.height = base_height
+
+            left = column + child.col_off
+            top = row + child.row_off
+
+            # collision detection.
+            # increment a grid cell in orientation if occupied
+            # if there's a use case where widgets should be over
+            # other widgets that should be done manually.
+            while True:
+                if not self.get_child_at(left, top):
+                    break
+                if direction == Gtk.DirectionType.DOWN:
+                    top += 1
+                elif direction == Gtk.DirectionType.RIGHT:
+                    left += 1
+                elif direction == Gtk.DirectionType.UP:
+                    top -= 1
+                elif direction == Gtk.DirectionType.LEFT:
+                    left -= 1
+                else:
+                    raise TypeError("Invalid direction")
+
+            self.attach(child.widget, left, top, child.width, child.height)
+
+
+# ### WIDGETS ### #
 
 
 class Adjuster(Gtk.Box):
@@ -519,92 +614,6 @@ Use the text_buffer property to set new buffers instead."""
     @value.setter
     def value(self, new_value):
         self.text_buffer.props.text = new_value
-
-
-class GridChild():
-    """GridChild can be given to bszgw.Grid's multi-widget functions in place of
-regular widgets. This allows the child to have many custom placement properties
-in a relatively compact fashion.
-
-col_off, row_off: offsets for column and row.
-width, height: if not None, overrides default dimension[s] when attaching."""
-    def __init__(
-        self, widget: Gtk.Widget,
-        col_off: int = 0, row_off: int = 0,
-        width: int = None, height: int = None,
-    ):
-        self.widget = widget
-        self.col_off = col_off
-        self.row_off = row_off
-        self.width = width
-        self.height = height
-
-
-class Grid(Gtk.Grid):
-    """Gtk.Grid with easier widget attachment functions.
-Also has some common props in init."""
-    def __init__(self,
-                 column_spacing: int = 10, row_spacing: int = 10,
-                 column_homogeneous: bool = False,
-                 row_homogeneous: bool = False):
-        super(Gtk.Grid, self).__init__()
-        self.props.column_spacing = column_spacing
-        self.props.row_spacing = row_spacing
-        self.props.column_homogeneous = column_homogeneous
-        self.props.row_homogeneous = row_homogeneous
-
-    def attach_all(self, *children,  # noqa: C901 Really? Only like 30 lines...
-                   column: int = 0, row: int = 0,
-                   base_width: int = 1, base_height: int = 1,
-                   direction: Gtk.DirectionType = Gtk.DirectionType.DOWN):
-        """Attaches multiple children at once.
-
-children: must be either instance of Gtk.Widget or bszgw.GridChild
-column and row: starting coordinates.
-base_width and base_height: size of widgets if not specified in GridChild
-direction: direction to 'push' widgets when they try to occupy the same space.
-Note all children's coords start at column, row instead of starting from the
-previous child's place."""
-
-        for child in children:
-            # for automation purposes.
-            if child is None:
-                continue
-
-            if isinstance(child, Gtk.Widget):
-                child = GridChild(child)
-
-            if not isinstance(child, GridChild):
-                raise TypeError(f"Child {child} is not an instance of "
-                                "Gtk.Widget or GridChild")
-
-            if child.width is None:
-                child.width = base_width
-            if child.height is None:
-                child.height = base_height
-
-            left = column + child.col_off
-            top = row + child.row_off
-
-            # collision detection.
-            # increment a grid cell in orientation if occupied
-            # if there's a use case where widgets should be over
-            # other widgets that should be done manually.
-            while True:
-                if not self.get_child_at(left, top):
-                    break
-                if direction == Gtk.DirectionType.DOWN:
-                    top += 1
-                elif direction == Gtk.DirectionType.RIGHT:
-                    left += 1
-                elif direction == Gtk.DirectionType.UP:
-                    top -= 1
-                elif direction == Gtk.DirectionType.LEFT:
-                    left -= 1
-                else:
-                    raise TypeError("Invalid direction")
-
-            self.attach(child.widget, left, top, child.width, child.height)
 
 
 def Message(message):
