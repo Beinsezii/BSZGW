@@ -8,7 +8,7 @@ of 70% of my lines being UI code and thought 'how can I be lazier'
 
 Brief overview:
  - Data-entry widgets *all* have a read/write 'value' property and
-   (eventually will) have reset() methods.
+   have reset() methods.
  - Tooltips for everything, labels where it makes sense.
  - Widgets are created more 'artistically'
    - Widgets can be created on initialization with common properties as kwargs.
@@ -23,7 +23,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk
-import abc
+from gi.repository import GObject
 import math
 
 
@@ -31,21 +31,11 @@ import math
 # Settle on App's scope and move it out of experimental
 
 
-class WidgetMixIn(metaclass=abc.ABCMeta):
-    """Mix-in abstract class providing various properties for BSZGW widgets."""
-    def __init__(self, expand: bool = True, tooltip: str = ""):
+class WidgetMixIn(GObject.Object):
+    """Mix-in providing various properties for BSZGW widgets."""
+    def __init__(self, tooltip: str = ""):
         """Shorthand way to set initial settings."""
-        self.expand = expand
         self.tooltip = tooltip
-
-    @property
-    def expand(self):
-        """'Smart' expand to fill containers."""
-        return self.props.expand
-
-    @expand.setter
-    def expand(self, value: bool):
-        self.props.expand = value
 
     @property
     def tooltip(self):
@@ -58,43 +48,30 @@ class WidgetMixIn(metaclass=abc.ABCMeta):
 
 
 class DataWidgetMixIn(WidgetMixIn):
-    """Mix-in absctract class additional properties and methods on top of
+    """Mix-in providing additional properties and methods on top of
 WidgetMixIn designed for data-entry fields."""
-    def __init__(self, value, expand: bool = True, tooltip: str = ""):
+    def __init__(self, value, tooltip: str = ""):
         """Shorthand way to set initial settings.
 Also sets reset_value used in reset()"""
-        super().__init__(expand=expand, tooltip=tooltip)
+        super().__init__(tooltip=tooltip)
         self.value = value
         self.reset_value = value
 
-    @abc.abstractmethod
     def connect_value_changed(self, function: callable, *args):
         """Connects to the widget's value change signal."""
-        pass
+        raise NotImplementedError
 
     def reset(self):
         self.value = self.reset_value
 
     @property
-    @abc.abstractmethod
     def value(self):
         """Value of the main data field."""
-        pass
+        raise NotImplementedError
 
     @value.setter
-    @abc.abstractmethod
     def value(self, value):
-        pass
-
-
-class WidgetMixInMeta(abc.ABCMeta, gi.types.GObjectMeta):
-    """Metaclass combines ABCMeta and GObjectMeta. Checks abstractmethods."""
-    def __init__(self, *args, **kwargs):
-        super(WidgetMixInMeta, self).__init__(*args, **kwargs)
-        if self.__abstractmethods__:  # thank stackoverflow for this one
-            raise TypeError(
-                "{} has not implemented abstract methods {}".format(
-                    self.__name__, ", ".join(self.__abstractmethods__)))
+        raise NotImplementedError
 
 
 class App(Gtk.Window):
@@ -360,22 +337,20 @@ to update the logarithmic scale."""
                 math.log(new_value, self.ls)
 
 
-class Button(Gtk.Button, WidgetMixIn, metaclass=WidgetMixInMeta):
-    """Gtk.Button. Has connect('clicked') built-in."""
-    def __init__(self, label, function, *args,
-                 tooltip=None, expand: bool = False):
-        super(Button, self).__init__(label=label)
-        WidgetMixIn.__init__(self, expand=expand, tooltip=tooltip)
+class Button(Gtk.Button, WidgetMixIn):
+    """Gtk.Button. Has connect('clicked') built into init."""
+    def __init__(self, label, function, *args, tooltip=None):
+        super().__init__(label=label)
+        WidgetMixIn.__init__(self, tooltip=tooltip)
         self.connect('clicked', function, *args if args else ())
 
 
-class CheckButton(Gtk.CheckButton, DataWidgetMixIn, metaclass=WidgetMixInMeta):
+class CheckButton(Gtk.CheckButton, DataWidgetMixIn):
     """Basically just a normal GTK checkbutton with the 'value' property
 and other tiny additions.  Possibly overkill."""
     def __init__(self, label, value, tooltip=None, expand: bool = False):
         super().__init__(label=label)
-        DataWidgetMixIn.__init__(self, value=value, expand=expand,
-                                 tooltip=tooltip)
+        DataWidgetMixIn.__init__(self, value, tooltip=tooltip)
 
     def connect_value_changed(self, function, *args):
         self.connect("toggled", function, *args if args else ())
