@@ -7,13 +7,14 @@ simple program creation take significantly less effort. Basically I got tired
 of 70% of my lines being UI code and thought 'how can I be lazier'
 
 Brief overview:
- - Data-entry widgets *all* have a read/write 'value' property and
-   have reset() methods.
- - Tooltips for everything, labels where it makes sense.
+ - Data-entry widgets have many extra features courtesy of the DataWidget mixin
+   - `value` property
+   - `reset` method
+   - `connect_changed` method
+ - Labels for everything
  - Widgets are created more 'artistically'
-   - Widgets can be created on initialization with common properties as kwargs.
    - The 'new()' method, if present, will create a fully functional widget
-     entirely from regular Python types, generating buffers/models as needed.
+     entirely from regular Python types, generating buffers/models as needed
      Create an entire ComboBox from a dict!
 """
 
@@ -34,38 +35,24 @@ import math
 # ### MIX-INS ### #
 # {{{
 
-class WidgetMixIn(GObject.Object):
+
+class DataWidget(GObject.Object):
     # {{{
-    """Mix-in providing various properties for BSZGW widgets."""
-    def __init__(self, tooltip: str = ""):
-        """Shorthand way to set initial settings."""
-        self.tooltip = tooltip
-
-    @property
-    def tooltip(self):
-        """Tooltip for widget."""
-        return self.props.tooltip_text
-
-    @tooltip.setter
-    def tooltip(self, value):
-        self.props.tooltip_text = value
-    # }}}
-
-
-class DataWidgetMixIn(WidgetMixIn):
-    # {{{
-    """Mix-in providing additional properties and methods on top of
-WidgetMixIn designed for data-entry fields."""
-    def __init__(self, value, tooltip: str = ""):
+    """Mix-in containing additional methods and properties
+for data-entry widgets"""
+    def __init__(self, value, widget: Gtk.Widget, signal: str):
         """Shorthand way to set initial settings.
 Also sets reset_value used in reset()"""
-        super().__init__(tooltip=tooltip)
+        super().__init__()
         self.value = value
         self.reset_value = value
+        self.value_widget = widget
+        self.value_signal = signal
 
-    def connect_value_changed(self, function: callable, *args):
+    def connect_changed(self, function: callable, *args):
         """Connects to the widget's value change signal."""
-        raise NotImplementedError
+        self.value_widget.connect(self.value_signal, function,
+                                  *args if args else ())
 
     def reset(self):
         self.value = self.reset_value
@@ -241,7 +228,7 @@ previous child's place."""
 # ### WIDGETS ### #
 # {{{
 
-class Adjuster(Gtk.Box):
+class Adjuster(Gtk.Box, DataWidget):
     # {{{
     """Widget for adjusting integers or floats.
 Adjuster() takes a label and Gtk.Adjustment,
@@ -254,8 +241,6 @@ as you get closer to higher values."""
                  adjustment: Gtk.Adjustment,
                  decimals: int = 0,
                  orientation: Gtk.Orientation = Gtk.Orientation.HORIZONTAL,
-                 tooltip: str = None,
-                 expand=True,
                  spin_button: bool = True,
                  scale: bool = True,
                  spin_accel: float = 0.0,
@@ -263,7 +248,7 @@ as you get closer to higher values."""
                  log_scale: int = 2,
                  scale_min_size: int = 200,
                  ):
-        super(Adjuster, self).__init__()
+        super().__init__()
 
         # Main box always vertical for label on top
         self.props.orientation = Gtk.Orientation.VERTICAL
@@ -304,20 +289,15 @@ as you get closer to higher values."""
             self.scale.set_size_request(width, height)
             adjuster_box.pack_start(self.scale, True, True, 0)
 
-            if tooltip:
-                self.scale.props.tooltip_text = tooltip
-
         if spin_button:
             self.spin_button = Gtk.SpinButton.new(adjustment, spin_accel, 0)
             # if scale present, don't expand
             adjuster_box.pack_start(self.spin_button, not scale, True, 0)
 
-            if tooltip:
-                self.spin_button.props.tooltip_text = tooltip
-
         self.decimals = decimals
         self.adjustment = adjustment
-        self.expand = expand
+        DataWidget.__init__(self, self.adjustment.props.value,
+                            self.adjustment, 'value-changed')
 
     def set_main_log(self, *args):
         """Internal function runs when a logarithmic scale is changed,
@@ -336,7 +316,7 @@ to update the logarithmic scale."""
     def new(label,
             value, min_value, max_value, step_increment, page_increment,
             decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
-            tooltip=None, spin_button=True, scale=True, expand=True,
+            spin_button=True, scale=True,
             spin_accel=0.0, logarithmic=False, log_scale=2,
             scale_min_size=200):
 
@@ -346,8 +326,6 @@ to update the logarithmic scale."""
                                           step_increment, page_increment, 0),
             decimals=decimals,
             orientation=orientation,
-            tooltip=tooltip,
-            expand=expand,
             spin_button=spin_button,
             scale=scale,
             spin_accel=spin_accel,
@@ -355,9 +333,6 @@ to update the logarithmic scale."""
             log_scale=log_scale,
             scale_min_size=scale_min_size,
         )
-
-    def reset(self):
-        self.value = self.initial
 
     @property
     def adjustment(self):
@@ -414,24 +389,6 @@ to update the logarithmic scale."""
             self.scale.props.digits = new_decimals
 
     @property
-    def expand(self):
-        return self.__expand
-
-    @expand.setter
-    def expand(self, expand: bool):
-        if hasattr(self, 'scale'):
-            if self.scale.props.orientation == Gtk.Orientation.HORIZONTAL:
-                self.scale.props.hexpand = expand
-                self.scale.props.vexpand = False
-            else:
-                self.scale.props.vexpand = expand
-                self.scale.props.hexpand = False
-
-        elif hasattr(self, 'spin_button'):
-            self.spin_button.props.hexpand = expand
-        self.__expand = expand
-
-    @property
     def value(self):
         if self.decimals > 0:
             return float(f'%.{self.decimals}f' % (self.adjustment.props.value))
@@ -448,26 +405,21 @@ to update the logarithmic scale."""
     # }}}
 
 
-class Button(Gtk.Button, WidgetMixIn):
+class Button(Gtk.Button):
     # {{{
     """Gtk.Button. Has connect('clicked') built into init."""
-    def __init__(self, label, function, *args, tooltip=None):
+    def __init__(self, label, function, *args):
         super().__init__(label=label)
-        WidgetMixIn.__init__(self, tooltip=tooltip)
         self.connect('clicked', function, *args if args else ())
     # }}}
 
 
-class CheckButton(Gtk.CheckButton, DataWidgetMixIn):
+class CheckButton(Gtk.CheckButton, DataWidget):
     # {{{
-    """Basically just a normal GTK checkbutton with the 'value' property
-and other tiny additions.  Possibly overkill."""
-    def __init__(self, label, value, tooltip=None, expand: bool = False):
+    """Basically just a normal GTK checkbutton with the DataWidget mixin"""
+    def __init__(self, label, value):
         super().__init__(label=label)
-        DataWidgetMixIn.__init__(self, value, tooltip=tooltip)
-
-    def connect_value_changed(self, function, *args):
-        self.connect("toggled", function, *args if args else ())
+        DataWidget.__init__(self, value, self, "toggled")
 
     @property
     def value(self):

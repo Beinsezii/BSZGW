@@ -18,12 +18,11 @@ if __name__ == "__main__":
 
     combo_box = bszgw.ComboBox.new(
         {"Choice A": "a", "Choice B": "b", "Choice C": "c"}, "a",
-        tooltip="Combo Box"
     )
 
     radio_buttons = bszgw.RadioButtons(
         "Radio Buttons",
-        ["Choice A", "Choice B", "Choice C"], 0
+        ["Choice A", "Choice B", "Choice C"], 0,
     )
 
     entry = bszgw.Entry("Entry", "Text\nLine 2")
