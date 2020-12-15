@@ -32,7 +32,7 @@ import math
 
 
 # ### MIX-INS ### #
-
+# {{{
 
 class WidgetMixIn(GObject.Object):
     """Mix-in providing various properties for BSZGW widgets."""
@@ -77,10 +77,12 @@ Also sets reset_value used in reset()"""
         raise NotImplementedError
 
 
+# }}}
 # ### CONTAINER TYPES ### #
-
+# {{{
 
 class App(Gtk.Window):
+    # {{{
     """DOCSTRING TODO
 EXPERIMENTAL"""
     def __init__(self, label, widget, width=-1, height=-1,
@@ -104,9 +106,11 @@ EXPERIMENTAL"""
                 x[0](*x[1:])
 
         Gtk.main()
+    # }}}
 
 
 def AutoBox(widgets: list, vspacing=10, hspacing=10, orientation=1) -> Gtk.Box:
+    # {{{
     """Automatically packs widgets into a box with recursion depth.
 Every sub-list inside the main widgets list flips packing orientation.
 This allows you to visually build your boxes:
@@ -136,9 +140,11 @@ This allows you to visually build your boxes:
         return None
 
     return box
+    # }}}
 
 
 class GridChild():
+    # {{{
     """GridChild can be given to bszgw.Grid's multi-widget functions in place of
 regular widgets. This allows the child to have many custom placement properties
 in a relatively compact fashion.
@@ -155,9 +161,11 @@ width, height: if not None, overrides default dimension[s] when attaching."""
         self.row_off = row_off
         self.width = width
         self.height = height
+    # }}}
 
 
 class Grid(Gtk.Grid):
+    # {{{
     """Gtk.Grid with easier widget attachment functions.
 Also has some common props in init."""
     def __init__(self,
@@ -222,12 +230,15 @@ previous child's place."""
                     raise TypeError("Invalid direction")
 
             self.attach(child.widget, left, top, child.width, child.height)
+    # }}}
 
 
+# }}}
 # ### WIDGETS ### #
-
+# {{{
 
 class Adjuster(Gtk.Box):
+    # {{{
     """Widget for adjusting integers or floats.
 Adjuster() takes a label and Gtk.Adjustment,
 while Adjuster.new() builds a Gtk.Adjustment from values inputted.
@@ -430,17 +441,21 @@ to update the logarithmic scale."""
         if self.log:
             self.scale.props.adjustment.props.value = \
                 math.log(new_value, self.ls)
+    # }}}
 
 
 class Button(Gtk.Button, WidgetMixIn):
+    # {{{
     """Gtk.Button. Has connect('clicked') built into init."""
     def __init__(self, label, function, *args, tooltip=None):
         super().__init__(label=label)
         WidgetMixIn.__init__(self, tooltip=tooltip)
         self.connect('clicked', function, *args if args else ())
+    # }}}
 
 
 class CheckButton(Gtk.CheckButton, DataWidgetMixIn):
+    # {{{
     """Basically just a normal GTK checkbutton with the 'value' property
 and other tiny additions.  Possibly overkill."""
     def __init__(self, label, value, tooltip=None, expand: bool = False):
@@ -457,9 +472,11 @@ and other tiny additions.  Possibly overkill."""
     @value.setter
     def value(self, value):
         self.props.active = value
+    # }}}
 
 
 class ComboBox(Gtk.ComboBox):
+    # {{{
     """Widget for selecting values in a drop-down list.
 Right now basically exclusively made for text. I want to implement more
 ComboBox/CellRenderer/TreeModel features but I'm not sure how to do that
@@ -525,9 +542,11 @@ Value types must be uniform among keys and among values"""
     @value.setter
     def value(self, new_value):
         self.props.active_id = new_value
+    # }}}
 
 
 class Entry(Gtk.Box):
+    # {{{
     """Creates a scrollable text entry widget.
 For self.entry, multi-line uses Gtk.TextView and single-line uses Gtk.Entry.
 No .new() method, as the widgets create their own buffers on creation.
@@ -614,17 +633,21 @@ Use the text_buffer property to set new buffers instead."""
     @value.setter
     def value(self, new_value):
         self.text_buffer.props.text = new_value
+    # }}}
 
 
 def Message(message):
+    # {{{
     """Opens a pop-op displaying a message."""
     dialog = Gtk.MessageDialog(text=str(message),
                                buttons=Gtk.ButtonsType.CLOSE)
     dialog.run()
     dialog.destroy()
+    # }}}
 
 
 class RadioButtons(Gtk.Box):
+    # {{{
     """DOCSTRING TODO"""
     def __init__(self, label, buttons, value,
                  orientation=Gtk.Orientation.VERTICAL,
@@ -678,3 +701,7 @@ class RadioButtons(Gtk.Box):
                 if self.radio_buttons.index(x) == new_value:
                     x.set_active(1)
                     return
+    # }}}
+
+
+# }}}
