@@ -163,7 +163,9 @@ Also has some common props in init."""
                  column_spacing: int = 10, row_spacing: int = 10,
                  column_homogeneous: bool = False,
                  row_homogeneous: bool = False):
-        super(Gtk.Grid, self).__init__()
+        #  TODO: figure out why this is fucky with the mixin
+        # super().__init__()
+        Gtk.Grid.__init__(self)
         self.props.column_spacing = column_spacing
         self.props.row_spacing = row_spacing
         self.props.column_homogeneous = column_homogeneous
@@ -228,7 +230,7 @@ previous child's place."""
 # ### WIDGETS ### #
 # {{{
 
-class Adjuster(Gtk.Box, DataWidget):
+class Adjuster(Grid, DataWidget):
     # {{{
     """Widget for adjusting integers or floats.
 Adjuster() takes a label and Gtk.Adjustment,
@@ -262,12 +264,8 @@ as you get closer to higher values."""
         self.log = logarithmic
         self.ls = log_scale
 
-        # label doesn't grow
         self.label = Gtk.Label.new(label)
-        self.pack_start(self.label, False, True, 0)
-
-        adjuster_box = Gtk.Box.new(orientation, 0)
-        self.pack_start(adjuster_box, True, True, 0)
+        self.attach_all(self.label, base_width=2)
 
         if scale:
             self.scale = Gtk.Scale.new(orientation, adjustment)
@@ -278,21 +276,28 @@ as you get closer to higher values."""
             # I had one of my scales get compressed into a single pixel before
             # so this is necessary
             if orientation == Gtk.Orientation.HORIZONTAL:
+                self.scale.props.hexpand = True
                 width = scale_min_size
                 height = -1
 
             else:
+                self.scale.props.vexpand = True
                 self.scale.props.value_pos = Gtk.PositionType.LEFT
                 width = -1
                 height = scale_min_size
 
             self.scale.set_size_request(width, height)
-            adjuster_box.pack_start(self.scale, True, True, 0)
+            self.attach_all(self.scale)
 
         if spin_button:
             self.spin_button = Gtk.SpinButton.new(adjustment, spin_accel, 0)
-            # if scale present, don't expand
-            adjuster_box.pack_start(self.spin_button, not scale, True, 0)
+            if orientation == Gtk.Orientation.HORIZONTAL:
+                self.spin_button.props.hexpand = not scale
+                direction = Gtk.DirectionType.RIGHT
+            else:
+                self.spin_button.props.hexpand = True
+                direction = Gtk.DirectionType.DOWN
+            self.attach_all(self.spin_button, row=1, direction=direction)
 
         self.decimals = decimals
         self.adjustment = adjustment
