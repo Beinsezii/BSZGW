@@ -35,6 +35,7 @@ import math
 # {{{
 
 class WidgetMixIn(GObject.Object):
+    # {{{
     """Mix-in providing various properties for BSZGW widgets."""
     def __init__(self, tooltip: str = ""):
         """Shorthand way to set initial settings."""
@@ -48,9 +49,11 @@ class WidgetMixIn(GObject.Object):
     @tooltip.setter
     def tooltip(self, value):
         self.props.tooltip_text = value
+    # }}}
 
 
 class DataWidgetMixIn(WidgetMixIn):
+    # {{{
     """Mix-in providing additional properties and methods on top of
 WidgetMixIn designed for data-entry fields."""
     def __init__(self, value, tooltip: str = ""):
@@ -75,6 +78,7 @@ Also sets reset_value used in reset()"""
     @value.setter
     def value(self, value):
         raise NotImplementedError
+    # }}}
 
 
 # }}}
