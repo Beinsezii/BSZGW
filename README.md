@@ -33,7 +33,7 @@ Brief overview:
  - **AutoBox** - A fuction that recursively boxes items in nested lists
  - **Grid** - A Gtk.Grid with extra methods for attaching widgets
 
-<img src="./Example Apps/example_app.png" width="400">
+<img src="./Example Apps/screenshot.png" width="400">
 Each widget of Example App is created with one line of code
 
 ```python
