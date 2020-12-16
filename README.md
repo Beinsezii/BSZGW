@@ -39,6 +39,7 @@ Brief overview:
 ### MixIns
   - **DataWidget** - Provides some uniform methods and properties for data-entry widgets.
     Allows for basic polymorphism.
+## Usage
 <img src="./Example Apps/screenshot.png" width="400">
 Each widget of Example App is created with one line of code
 
