@@ -3,7 +3,7 @@
 Making the creation of GTK applications so simple, you'll think "wow, I just took a hour and a half python course on YouTube and am very underqualified for what I am trying to do, but now I can at least hide my crazy spaghetti code behind some fancy buttons that I don't understand at any fundamental level. this is amazing"
 
 ### Current Status
-Features usable with low expectations. Breaking changes basically every relatively important commit.
+Features usable with mild expectations. Breaking changes will be frequent but marked in semver.
 
 ## Description
 Provides replacements for common GTK widgets intended to make dialog and
@@ -11,52 +11,57 @@ simple program creation take significantly less effort. Basically I got tired
 of 70% of my lines being UI code and thought 'how can I be lazier'
 
 Brief overview:
- - Data-entry widgets *all* have a read/write 'value' property and
-   (eventually will) have reset() methods.
- - Tooltips for everything, labels where it makes sense.
+ - Data-entry widgets have many extra features courtesy of the DataWidget mixin
+   - `value` property
+   - `reset` method
+   - `connect_changed` method
+ - Labels for everything
  - Widgets are created more 'artistically'
-   - Widgets can be created on initialization with common properties as kwargs.
    - The 'new()' method, if present, will create a fully functional widget
-     entirely from regular Python types, generating buffers/models as needed.
-     Create an entire ComboBox from a dict!
+     entirely from regular Python types, generating buffers/models as needed
 
 ## Widgets
- - **Adjuster** - A combination of a scale and spinnbutton. Both can be enabled/disabled on creation, and the scale can operate in logarithm
- - **Button** - Create a button connected to a function in one line.
- - **CheckButton** - Literally just a Gtk.CheckButton with the .value property extras.
- - **ComboBox** - ComboBox that's easier to create. Notably can be created from a dictionary using ComboBox.new()
+ - **Button** - Create a button connected to a function in one line
+ - **CheckButton** - Literally just a Gtk.CheckButton with the DataWidget mixin
+ - **ComboBox** - ComboBox that's easier to create
  - **Entry** - A single or multi-line text entry box
- - **RadioButtons** - A Box with a generated group of radio buttons.
+ - **RadioButtons** - A Box with a generated group of radio buttons
+ - **SpinScale** - A combination of a scale and spinnbutton. The scale can operate in logarithm
+
+## Containers
+ - **App** - A Window extended to control the program state
+ - **AutoBox** - A fuction that recursively boxes items in nested lists
+ - **Grid** - A Gtk.Grid with extra methods for attaching widgets
 
 <img src="./Example Apps/example_app.png" width="400">
 Each widget of Example App is created with one line of code
 
 ```python
 # Start val, min, max, increment, big/page increment.
-# Can also be built with a Gtk.Adjustment using Adjuster() instead of Adjuster.new()
-adjuster = bszgw.Adjuster.new("Adjuster", 30, 0, 1000, 5, 10,
-                              decimals=1, logarithmic=True)
-adjuster2 = bszgw.Adjuster.new("Adjuster2", 30, 0, 100, 5, 10,
-                               scale=False)
-
+# Can also be built with a Gtk.Adjustment using
+# SpinScale() instead of SpinScale.new()
+spinscale = bszgw.SpinScale.new(
+    30, -1000, 10000, 5, 10,
+    label="SpinScale", digits=1, logarithmic=True
+)
 check_button = bszgw.CheckButton("Check Button", True)
 
-# Can be built with a dict using ComboBox.new(), or a Gtk.TreeModel using ComboBox()
-# Sort of a WIP, as right now it's only useful for text.
+# Logarithmic scale can be enabled/disabled at will
+log_check = bszgw.CheckButton("Logarithmic", True)
+
+# Creates a Gtk.TreeModel fom a dict
 combo_box = bszgw.ComboBox.new(
     {"Choice A": "a", "Choice B": "b", "Choice C": "c"}, "a",
-    tooltip="Combo Box"
 )
+
+entry = bszgw.Entry("Entry", "Text\nLine 2", multi_line=True)
 
 radio_buttons = bszgw.RadioButtons(
     "Radio Buttons",
-    ["Choice A", "Choice B", "Choice C"], 0
+    ["Choice A", "Choice B", "Choice C"], 0,
+
+exec_button = bszgw.Button("Execute", get_vals)
 )
-
-entry = bszgw.Entry("Entry", "Text\nLine 2")
-
-# yes I'm this lazy.
-exec_button = bszgw.Button("Execute", Your_Function_Here)
 ```
 
 ## Containers & Other Features
@@ -66,14 +71,14 @@ Automatically generates a layout for apps using boxes. Widgets are fed in via a 
 Again referring to Example App, the organization of the widgets goes as follows
  
 ```python
-adjuster2_combo = bszgw.AutoBox([
-    adjuster2,
+logcheck_combo = bszgw.AutoBox([
+    log_check,
     combo_box
 ])
 
 left_side = bszgw.AutoBox([
     adjuster,
-    [adjuster2_combo, radio_buttons]
+    [logcheck_combo, radio_buttons]
 ])
 
 right_side = bszgw.AutoBox([
@@ -97,8 +102,8 @@ grid = bszgw.Grid()
 GC = bszgw.GridChild
 
 grid.attach_all(
-    GC(adjuster, width=2),
-    adjuster2, GC(radio_buttons, col_off=1, height=2),
+    GC(spinscale, width=2),
+    log_check, GC(radio_buttons, col_off=1, height=2),
     combo_box,
 )
 
@@ -109,6 +114,7 @@ grid.attach_all(
     check_button, GC(exec_button, col_off=1),
     column=3
 )
+
  ```
  
 ### Message

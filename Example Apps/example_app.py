@@ -8,34 +8,35 @@ import bszgw
 
 
 if __name__ == "__main__":
-    # Demonstrating various widgets. For more detail look in bszgw.py
-    spinscale = bszgw.SpinScale.new(30, -1000, 10000, 5, 10,
-                                    label="SpinScale",
-                                    digits=1, logarithmic=True)
-
-    log_check = bszgw.CheckButton("Logarithmic", True)
-
-    def log_check_fn(widget):
-        spinscale.logarithmic = log_check.value
-
-    log_check.connect_changed(log_check_fn)
-
+    # Start val, min, max, increment, big/page increment.
+    # Can also be built with a Gtk.Adjustment using
+    # SpinScale() instead of SpinScale.new()
+    spinscale = bszgw.SpinScale.new(
+        30, -1000, 10000, 5, 10,
+        label="SpinScale", digits=1, logarithmic=True
+    )
     check_button = bszgw.CheckButton("Check Button", True)
 
+    # Logarithmic scale can be enabled/disabled at will
+    log_check = bszgw.CheckButton("Logarithmic", True)
+
+    # Creates a Gtk.TreeModel fom a dict
     combo_box = bszgw.ComboBox.new(
         {"Choice A": "a", "Choice B": "b", "Choice C": "c"}, "a",
     )
+
+    entry = bszgw.Entry("Entry", "Text\nLine 2", multi_line=True)
 
     radio_buttons = bszgw.RadioButtons(
         "Radio Buttons",
         ["Choice A", "Choice B", "Choice C"], 0,
     )
 
-    entry = bszgw.Entry("Entry", "Text\nLine 2")
+    def log_check_fn(widget):
+        spinscale.logarithmic = log_check.value
 
-    # Functions called by buttons get sent the button itself
-    # as the first variable.
-    # Will error if function takes no args
+    log_check.connect_changed(log_check_fn)
+
     def get_vals(widget):
         bszgw.Message(f"""SpinScale = {spinscale.value}
 Check Button = {check_button.value}
