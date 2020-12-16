@@ -1,5 +1,5 @@
 # BSZGW
-### BeinSeZii Gtk Wrapper
+### BeinSeZii Gtk Wrapper 1.0.0
 Making the creation of GTK applications so simple, you'll think "wow, I just took a hour and a half python course on YouTube and am very underqualified for what I am trying to do, but now I can at least hide my crazy spaghetti code behind some fancy buttons that I don't understand at any fundamental level. this is amazing"
 
 ### Current Status
