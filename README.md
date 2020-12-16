@@ -20,7 +20,7 @@ Brief overview:
    - The 'new()' method, if present, will create a fully functional widget
      entirely from regular Python types, generating buffers/models as needed
 
-## Widgets
+### Widgets
  - **Button** - Create a button connected to a function in one line
  - **CheckButton** - Literally just a Gtk.CheckButton with the DataWidget mixin
  - **ComboBox** - ComboBox that's easier to create
@@ -28,11 +28,17 @@ Brief overview:
  - **RadioButtons** - A Box with a generated group of radio buttons
  - **SpinScale** - A combination of a scale and spinnbutton. The scale can operate in logarithm
 
-## Containers
+### Containers
  - **App** - A Window extended to control the program state
  - **AutoBox** - A fuction that recursively boxes items in nested lists
  - **Grid** - A Gtk.Grid with extra methods for attaching widgets
+   - **GridChild** - a simple struct around a widget that can be fed to Grid's attach
+     functions in place of an actual widget to specify more precise placement
+ - **Message** - A small function to display a message in a pop-up
 
+### MixIns
+  - **DataWidget** - Provides some uniform methods and properties for data-entry widgets.
+    Allows for basic polymorphism.
 <img src="./Example Apps/screenshot.png" width="400">
 Each widget of Example App is created with one line of code
 
@@ -64,12 +70,7 @@ exec_button = bszgw.Button("Execute", get_vals)
 )
 ```
 
-## Containers & Other Features
-### AutoBox
-Automatically generates a layout for apps using boxes. Widgets are fed in via a multi-level list, with every "level" (sublist) switching the direction.
-
-Again referring to Example App, the organization of the widgets goes as follows
- 
+And the widgets are easy to pack together using the containers using **AutoBox**
 ```python
 logcheck_combo = bszgw.AutoBox([
     log_check,
@@ -88,13 +89,7 @@ right_side = bszgw.AutoBox([
 
 box = bszgw.AutoBox([[left_side, right_side]])
 ```
-This method is maximum readability using one 'level' of recursion in the lists. It's basically the same thing PySimpleGUI does. AutoBox also supports any amount of 'depth' via lists *inside* lists, with each level of 'depth' switching orientation. Questionably useful, as readability drops off immensely.
-
-### Grid
-Gtk.Grid with extra methods for attaching widgets.
- - **GridChild** - Can be substituted in Grid's new methods in place of regular widgets. Contains additional properties to influence placement.
-
- The example app's layout looks like 
+or **Grid**
  ```python
 grid = bszgw.Grid()
 # GridChild just packs a widget with some extra properties for
@@ -117,15 +112,7 @@ grid.attach_all(
 
  ```
  
-### Message
-Function that simply opens a pop-up displaying a message. Possible expansion. 
-
-## Experimental Features
-These features are still in conceptual stages and subject to many many reformats.
-### App
-A class that takes a widget/container and turns it into a single-window app with a .launch() function.
-
-In Example App, the code to create the interactable window with the widget layout is only two lines
+And finally, in Example App, the code to create the interactable window with the widget layout is only two lines
 ```python
 app = bszgw.App("App Name", grid)
 app.launch()
