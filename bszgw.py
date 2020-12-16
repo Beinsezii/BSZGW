@@ -33,7 +33,6 @@ import math
 
 
 # ### MIX-INS ### #
-# {{{
 
 
 class DataWidget(GObject.Object):
@@ -68,9 +67,8 @@ Also sets reset_value used in reset()"""
     # }}}
 
 
-# }}}
 # ### CONTAINER TYPES ### #
-# {{{
+
 
 class App(Gtk.Window):
     # {{{
@@ -226,25 +224,32 @@ previous child's place."""
     # }}}
 
 
-# }}}
-# ### WIDGETS ### #
-# {{{
+def Message(message):
+    # {{{
+    """Opens a pop-op displaying a message."""
+    dialog = Gtk.MessageDialog(text=str(message),
+                               buttons=Gtk.ButtonsType.CLOSE)
+    dialog.run()
+    dialog.destroy()
+    # }}}
 
-class Adjuster(Grid, DataWidget):
+
+# ### WIDGETS ### #
+
+
+class SpinScale(Grid, DataWidget):
     # {{{
     """Widget for adjusting integers or floats.
-Adjuster() takes a label and Gtk.Adjustment,
-while Adjuster.new() builds a Gtk.Adjustment from values inputted.
-If logarithmic=True, the scale (slider)'s adjustment will be changed
-according to log(x, log_scale).  This means the scale will 'accelerate'
-as you get closer to higher values."""
+SpinScale() takes a Gtk.Adjustment,
+while SpinScale.new() builds a Gtk.Adjustment from values inputted.
+If logarithmic=True, the scale's adjustment will be changed
+according to log(x, log_scale). This means the scale will 'accelerate'
+as you get closer to extreme values."""
     def __init__(self,
-                 label: str,
                  adjustment: Gtk.Adjustment,
-                 decimals: int = 0,
+                 label: str = "",
+                 digits: int = 0,
                  orientation: Gtk.Orientation = Gtk.Orientation.HORIZONTAL,
-                 spin_button: bool = True,
-                 scale: bool = True,
                  spin_accel: float = 0.0,
                  logarithmic: bool = False,
                  log_scale: int = 2,
@@ -252,161 +257,165 @@ as you get closer to higher values."""
                  ):
         super().__init__()
 
-        # Main box always vertical for label on top
-        self.props.orientation = Gtk.Orientation.VERTICAL
+        if label:
+            self.label = Gtk.Label.new(label)
+            self.attach_all(self.label, base_width=2)
 
-        # log is a one-stop shop. Must have both widgets and can't be reverted.
-        # probably possible to make it changeable-on-the-fly but I've written
-        # enough code for now.
-        assert spin_button or scale
-        if logarithmic:
-            assert spin_button and scale and log_scale > 1
-        self.log = logarithmic
-        self.ls = log_scale
+        self.scale = Gtk.Scale.new(orientation, adjustment)
+        self.scale.props.draw_value = False
 
-        self.label = Gtk.Label.new(label)
-        self.attach_all(self.label, base_width=2)
+        self.spin_button = Gtk.SpinButton.new(adjustment, spin_accel, 0)
 
-        if scale:
-            self.scale = Gtk.Scale.new(orientation, adjustment)
-            # disable value pop-up if spin_button used.
-            self.scale.props.draw_value = not spin_button
+        if orientation == Gtk.Orientation.HORIZONTAL:
+            self.scale.props.hexpand = True
+            direction = Gtk.DirectionType.RIGHT
 
-            # min size request, either horizontally or vertically.
-            # I had one of my scales get compressed into a single pixel before
-            # so this is necessary
-            if orientation == Gtk.Orientation.HORIZONTAL:
-                self.scale.props.hexpand = True
-                width = scale_min_size
-                height = -1
+            width = scale_min_size
+            height = -1
+        else:
+            self.scale.props.vexpand = True
+            self.spin_button.props.hexpand = True
 
-            else:
-                self.scale.props.vexpand = True
-                self.scale.props.value_pos = Gtk.PositionType.LEFT
-                width = -1
-                height = scale_min_size
+            width = -1
+            height = scale_min_size
 
-            self.scale.set_size_request(width, height)
-            self.attach_all(self.scale)
+            direction = Gtk.DirectionType.DOWN
 
-        if spin_button:
-            self.spin_button = Gtk.SpinButton.new(adjustment, spin_accel, 0)
-            if orientation == Gtk.Orientation.HORIZONTAL:
-                self.spin_button.props.hexpand = not scale
-                direction = Gtk.DirectionType.RIGHT
-            else:
-                self.spin_button.props.hexpand = True
-                direction = Gtk.DirectionType.DOWN
-            self.attach_all(self.spin_button, row=1, direction=direction)
+        # min size request, either horizontally or vertically.
+        # I had one of my scales get compressed into a single pixel before
+        # so this is necessary
+        self.scale.set_size_request(width, height)
 
-        self.decimals = decimals
+        self.attach_all(self.scale, self.spin_button,
+                        row=1, direction=direction)
+
+        self.digits = digits
+        self.__log = logarithmic
+        self.__log_scale = log_scale
         self.adjustment = adjustment
         DataWidget.__init__(self, self.adjustment.props.value,
                             self.adjustment, 'value-changed')
 
-    def set_main_log(self, *args):
-        """Internal function runs when a logarithmic scale is changed,
-to update the spin button."""
-        if self.log:
-            self.adjustment.props.value = \
-                self.ls ** self.scale.props.adjustment.props.value
-
-    def set_log_main(self, *args):
-        """Internal function runs when a spin button is changed,
-to update the logarithmic scale."""
-        if self.log:
-            self.scale.props.adjustment.props.value = \
-                math.log(self.adjustment.props.value, self.ls)
-
-    def new(label,
-            value, min_value, max_value, step_increment, page_increment,
-            decimals=0, orientation=Gtk.Orientation.HORIZONTAL,
-            spin_button=True, scale=True,
+    def new(value, min_value, max_value, step_increment, page_increment,
+            label="",
+            digits=0, orientation=Gtk.Orientation.HORIZONTAL,
             spin_accel=0.0, logarithmic=False, log_scale=2,
             scale_min_size=200):
 
-        return Adjuster(
-            label=label,
+        return SpinScale(
             adjustment=Gtk.Adjustment.new(value, min_value, max_value,
                                           step_increment, page_increment, 0),
-            decimals=decimals,
+            label=label,
+            digits=digits,
             orientation=orientation,
-            spin_button=spin_button,
-            scale=scale,
             spin_accel=spin_accel,
             logarithmic=logarithmic,
             log_scale=log_scale,
             scale_min_size=scale_min_size,
         )
 
+    def set_main_from_log(self, *args):
+        """Internal function runs when a logarithmic scale is changed,
+to update the spin button."""
+        if self.logarithmic:
+            self.adjustment.props.value = \
+                self.smart_unlog(self.scale.props.adjustment.props.value)
+
+    def set_log_from_main(self, *args):
+        """Internal function runs when a spin button is changed,
+to update the logarithmic scale."""
+        if self.logarithmic:
+            self.scale.props.adjustment.props.value = \
+                self.smart_log(self.adjustment.props.value)
+
+    def smart_log(self, value: float) -> float:
+        """Internal function that returns a value 'smartly' logarithmicized,
+accounting for negatives and 0"""
+        if value > 0:
+            return math.log(value, self.log_scale)
+        elif value == 0:
+            return 0
+        elif value < 0:
+            return -(math.log(abs(value), self.log_scale))
+
+    def smart_unlog(self, value: float) -> float:
+        """Internal function that returns a logarithmicized value 'smartly'
+de-logarithmicized, accounting for negatives and 0"""
+        if value > 0:
+            return self.log_scale ** value
+        elif value == 0:
+            return 0
+        elif value < 0:
+            return -(self.log_scale ** abs(value))
+
     @property
     def adjustment(self):
-        if hasattr(self, 'spin_button'):
-            return self.spin_button.props.adjustment
-        elif hasattr(self, 'scale'):
-            return self.scale.props.adjustment
-        # don't need log check.
+        return self.spin_button.props.adjustment
 
     @adjustment.setter
     def adjustment(self, new_adjust):
-        if hasattr(self, 'spin_button'):
-            self.spin_button.set_adjustment(new_adjust)
-        if hasattr(self, 'scale'):
-            # if log, create a separate Gtk.Adjustment connected to
-            # set_main_log()
-            if self.log:
-                low = new_adjust.props.lower
-                # only log the lower limit if above 0
-                if low > 0:
-                    newlow = math.log(low, self.ls)
-                else:
-                    newlow = low
-
-                # logs the upper, possibly lower (above), and value.
-                # to base self.ls
-                log_adjust = Gtk.Adjustment.new(
-                    value=math.log(new_adjust.props.value, self.ls),
-                    lower=newlow,
-                    upper=math.log(new_adjust.props.upper, self.ls),
-                    step_increment=new_adjust.props.step_increment,
-                    page_increment=new_adjust.props.page_increment,
-                    page_size=new_adjust.props.page_size
-                )
-                log_adjust.connect("value-changed", self.set_main_log)
-                self.adjustment.connect("value-changed", self.set_log_main)
-                self.scale.props.adjustment = log_adjust
-            else:
-                self.scale.adjustment = new_adjust
-        self.initial = self.value
+        self.spin_button.props.adjustment = new_adjust
+        self.reset_value = new_adjust.props.value
+        self.logarithmic = self.logarithmic  # sets scale adj
 
     @property
-    def decimals(self):
-        if hasattr(self, 'spin_button'):
-            return self.spin_button.props.digits
-        elif hasattr(self, 'scale'):
-            return self.scale.props.digits
+    def digits(self) -> int:
+        return self.spin_button.props.digits
 
-    @decimals.setter
-    def decimals(self, new_decimals):
-        if hasattr(self, 'spin_button'):
-            self.spin_button.props.digits = new_decimals
-        if hasattr(self, 'scale'):
-            self.scale.props.digits = new_decimals
+    @digits.setter
+    def digits(self, new_decimals: int):
+        self.spin_button.props.digits = new_decimals
+        self.scale.props.digits = new_decimals
 
     @property
-    def value(self):
-        if self.decimals > 0:
-            return float(f'%.{self.decimals}f' % (self.adjustment.props.value))
+    def logarithmic(self) -> bool:
+        return self.__log
+
+    @logarithmic.setter
+    def logarithmic(self, value: bool):
+        self.__log = value
+        if value:
+            self.__log_adj = Gtk.Adjustment.new(
+                value=self.smart_log(self.adjustment.props.value),
+                lower=self.smart_log(self.adjustment.props.lower),
+                upper=self.smart_log(self.adjustment.props.upper),
+                step_increment=self.smart_log(
+                    self.adjustment.props.step_increment),
+                page_increment=self.smart_log(
+                    self.adjustment.props.page_increment),
+                page_size=self.smart_log(self.adjustment.props.page_size),
+            )
+            self.__log_adj.connect("value-changed", self.set_main_from_log)
+            self.adjustment.connect("value-changed", self.set_log_from_main)
+            self.scale.props.adjustment = self.__log_adj
+        else:
+            self.scale.props.adjustment = self.adjustment
+
+    @property
+    def log_scale(self) -> float:
+        return self.__log_scale
+
+    @log_scale.setter
+    def log_scale(self, value: float):
+        """Must be > 1"""
+        assert value > 1
+        self.__log_scale = value
+        self.logarithmic = self.logarithmic
+
+    @property
+    def value(self) -> float:
+        if self.digits > 0:
+            return float(f'%.{self.digits}f' % (self.adjustment.props.value))
 
         else:
-            return int(f'%.{self.decimals}f' % (self.adjustment.props.value))
+            return int(f'%.{self.digits}f' % (self.adjustment.props.value))
 
     @value.setter
-    def value(self, new_value):
+    def value(self, new_value: float):
         self.adjustment.props.value = new_value
-        if self.log:
+        if self.logarithmic:
             self.scale.props.adjustment.props.value = \
-                math.log(new_value, self.ls)
+                math.log(new_value, self.log_scale)
     # }}}
 
 
@@ -597,16 +606,6 @@ Use the text_buffer property to set new buffers instead."""
     # }}}
 
 
-def Message(message):
-    # {{{
-    """Opens a pop-op displaying a message."""
-    dialog = Gtk.MessageDialog(text=str(message),
-                               buttons=Gtk.ButtonsType.CLOSE)
-    dialog.run()
-    dialog.destroy()
-    # }}}
-
-
 class RadioButtons(Gtk.Box):
     # {{{
     """DOCSTRING TODO"""
@@ -663,6 +662,3 @@ class RadioButtons(Gtk.Box):
                     x.set_active(1)
                     return
     # }}}
-
-
-# }}}

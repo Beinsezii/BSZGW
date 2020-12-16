@@ -9,10 +9,16 @@ import bszgw
 
 if __name__ == "__main__":
     # Demonstrating various widgets. For more detail look in bszgw.py
-    adjuster = bszgw.Adjuster.new("Adjuster", 30, 0, 1000, 5, 10,
-                                  decimals=1, logarithmic=True)
-    adjuster2 = bszgw.Adjuster.new("Adjuster2", 30, 0, 100, 5, 10,
-                                   scale=False)
+    spinscale = bszgw.SpinScale.new(30, -1000, 10000, 5, 10,
+                                    label="SpinScale",
+                                    digits=1, logarithmic=True)
+
+    log_check = bszgw.CheckButton("Logarithmic", True)
+
+    def log_check_fn(widget):
+        spinscale.logarithmic = log_check.value
+
+    log_check.connect_changed(log_check_fn)
 
     check_button = bszgw.CheckButton("Check Button", True)
 
@@ -31,8 +37,7 @@ if __name__ == "__main__":
     # as the first variable.
     # Will error if function takes no args
     def get_vals(widget):
-        bszgw.Message(f"""Adjuster = {adjuster.value}
-Adjuster2 = {adjuster2.value}
+        bszgw.Message(f"""SpinScale = {spinscale.value}
 Check Button = {check_button.value}
 Combo Box = {combo_box.value}
 Radio Buttons = {radio_buttons.value}
@@ -47,8 +52,8 @@ Entry =
     GC = bszgw.GridChild
 
     grid.attach_all(
-        GC(adjuster, width=2),
-        adjuster2, GC(radio_buttons, col_off=1, height=2),
+        GC(spinscale, width=2),
+        log_check, GC(radio_buttons, col_off=1, height=2),
         combo_box,
     )
 
@@ -62,14 +67,14 @@ Entry =
 
     # AutoBox version:
 
-    # adjuster2_combo = bszgw.AutoBox([
-    #     adjuster2,
+    # logcheck_combo = bszgw.AutoBox([
+    #     log_check,
     #     combo_box
     # ])
 
     # left_side = bszgw.AutoBox([
     #     adjuster,
-    #     [adjuster2_combo, radio_buttons]
+    #     [logcheck_combo, radio_buttons]
     # ])
 
     # right_side = bszgw.AutoBox([
