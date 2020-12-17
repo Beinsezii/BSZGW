@@ -169,10 +169,9 @@ Also has some common props in init."""
         self.props.column_homogeneous = column_homogeneous
         self.props.row_homogeneous = row_homogeneous
 
-    def attach_all(self, *children,  # noqa: C901 Really? Only like 30 lines...
+    def attach_all(self, direction: Gtk.DirectionType, *children,  # noqa: C901
                    column: int = 0, row: int = 0,
-                   base_width: int = 1, base_height: int = 1,
-                   direction: Gtk.DirectionType = Gtk.DirectionType.DOWN):
+                   base_width: int = 1, base_height: int = 1):
         """Attaches multiple children at once.
 
 children: must be either instance of Gtk.Widget or bszgw.GridChild
@@ -221,6 +220,31 @@ previous child's place."""
                     raise TypeError("Invalid direction")
 
             self.attach(child.widget, left, top, child.width, child.height)
+
+    def attach_all_down(self, *children, column: int = 0, row: int = 0,
+                        base_width: int = 1, base_height: int = 1):
+        self.attach_all(Gtk.DirectionType.DOWN, *children,
+                        column=column, row=row,
+                        base_width=base_width, base_height=base_height)
+
+    def attach_all_left(self, *children, column: int = 0, row: int = 0,
+                        base_width: int = 1, base_height: int = 1):
+        self.attach_all(Gtk.DirectionType.LEFT, *children,
+                        column=column, row=row,
+                        base_width=base_width, base_height=base_height)
+
+    def attach_all_right(self, *children, column: int = 0, row: int = 0,
+                         base_width: int = 1, base_height: int = 1):
+        self.attach_all(Gtk.DirectionType.RIGHT, *children,
+                        column=column, row=row,
+                        base_width=base_width, base_height=base_height)
+
+    def attach_all_up(self, *children, column: int = 0, row: int = 0,
+                      base_width: int = 1, base_height: int = 1):
+        self.attach_all(Gtk.DirectionType.UP, *children,
+                        column=column, row=row,
+                        base_width=base_width, base_height=base_height)
+
     # }}}
 
 
@@ -273,7 +297,9 @@ just make new ComboBoxes for other types."""
     def __init__(self, model: Gtk.TreeModel, value,
                  column: int = 0, id_column: int = 0,
                  show_ids: bool = False, wrap: int = 0):
-        super(ComboBox, self).__init__()
+        # TODO: genuinely though why is this fucky in some widgets
+        # super(ComboBox, self).__init__()
+        Gtk.ComboBox.__init__(self)
 
         self.props.model = model
 
@@ -288,10 +314,9 @@ just make new ComboBoxes for other types."""
 
         self.props.wrap_width = wrap
         self.props.id_column = id_column
-        DataWidget.__init__(value, self, "changed")
+        DataWidget.__init__(self, value, self, "changed")
 
     def new(dictionary: dict, value,
-            tooltip: str = None, expand: bool = True,
             show_ids: bool = True, wrap: int = 0):
         """Creates a new ComboBox from a dictionary.
 Value types must be uniform among keys and among values"""
@@ -303,7 +328,7 @@ Value types must be uniform among keys and among values"""
             model.append((key, dictionary[key]))
 
         return ComboBox(
-            model=model, value=value, tooltip=tooltip, expand=expand,
+            model=model, value=value,
             id_column=1, show_ids=show_ids, wrap=wrap,
         )
 
@@ -488,7 +513,7 @@ as you get closer to extreme values."""
 
         if label:
             self.label = Gtk.Label.new(label)
-            self.attach_all(self.label, base_width=2)
+            self.attach_all_down(self.label, base_width=2)
 
         self.scale = Gtk.Scale.new(orientation, adjustment)
         self.scale.props.draw_value = False
@@ -515,8 +540,7 @@ as you get closer to extreme values."""
         # so this is necessary
         self.scale.set_size_request(width, height)
 
-        self.attach_all(self.scale, self.spin_button,
-                        row=1, direction=direction)
+        self.attach_all(direction, self.scale, self.spin_button, row=1)
 
         self.digits = digits
         self.__log = logarithmic

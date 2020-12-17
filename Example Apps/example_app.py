@@ -52,7 +52,7 @@ Entry =
     # adding to the grid
     GC = bszgw.GridChild
 
-    grid.attach_all(
+    grid.attach_all_down(
         GC(spinscale, width=2),
         log_check, GC(radio_buttons, col_off=1, height=2),
         combo_box,
@@ -60,7 +60,7 @@ Entry =
 
     # nothing stopping you from using GridChild to attach these all at once
     # but I think it looks nicer this way.
-    grid.attach_all(
+    grid.attach_all_down(
         GC(entry, width=2, height=2),
         check_button, GC(exec_button, col_off=1),
         column=3
