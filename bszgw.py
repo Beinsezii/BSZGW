@@ -415,26 +415,20 @@ class RadioButtons(Grid, DataWidget):
     # {{{
     """DOCSTRING TODO"""
     def __init__(self, buttons, value, label="",
-                 orientation=Gtk.Orientation.VERTICAL, enums=False):
+                 orientation=Gtk.Orientation.VERTICAL):
         assert len(buttons) > 1
         super().__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
-        self.enums = enums
         if label:
             self.label = Gtk.Label.new(label)
             self.attach_all_down(self.label)
         self.radio_buttons = []
-        if self.enums:
-            self.values = []
         for num, var in enumerate(buttons):
             self.radio_buttons.append(Gtk.RadioButton.new_with_label(
-                None, str(var) if not self.enums else str(var[0])))
+                None, var))
 
             if num > 0:
                 self.radio_buttons[num].join_group(self.radio_buttons[0])
-
-            if self.enums:
-                self.values.append(var[1])
 
         if orientation == Gtk.Orientation.VERTICAL:
             self.attach_all_down(*self.radio_buttons)
@@ -445,27 +439,14 @@ class RadioButtons(Grid, DataWidget):
                             self.radio_buttons[0], "group-changed")
 
     @property
-    def value(self):
+    def value(self) -> int:
         for x in self.radio_buttons:
             if x.get_active():
-                if self.enums:
-                    return self.values[self.radio_buttons.index(x)]
-
-                else:
-                    return self.radio_buttons.index(x)
+                return self.radio_buttons.index(x)
 
     @value.setter
-    def value(self, new_value):
-        for x in self.radio_buttons:
-            if self.enums:
-                if self.values[self.radio_buttons.index(x)] == new_value:
-                    x.set_active(1)
-                    return
-
-            else:
-                if self.radio_buttons.index(x) == new_value:
-                    x.set_active(1)
-                    return
+    def value(self, index: int):
+        self.radio_buttons[index].set_active(1)
     # }}}
 
 
