@@ -25,11 +25,11 @@ if __name__ == "__main__":
         {"Choice A": "a", "Choice B": "b", "Choice C": "c"}, "a",
     )
 
-    entry = bszgw.Entry("Text\nLine 2", "Entry", multi_line=True)
+    entry = bszgw.Entry("Text\nLine 2", label="Entry", multi_line=True)
 
     radio_buttons = bszgw.RadioButtons(
-        "Radio Buttons",
         ["Choice A", "Choice B", "Choice C"], 0,
+        label="Radio Buttons",
     )
 
     def log_check_fn(widget):

@@ -411,27 +411,24 @@ Use the text_buffer property to set new buffers instead."""
     # }}}
 
 
-class RadioButtons(Gtk.Box):
+class RadioButtons(Grid, DataWidget):
     # {{{
     """DOCSTRING TODO"""
-    def __init__(self, label, buttons, value,
-                 orientation=Gtk.Orientation.VERTICAL,
-                 enums=False, tooltip=None):
+    def __init__(self, buttons, value, label="",
+                 orientation=Gtk.Orientation.VERTICAL, enums=False):
         assert len(buttons) > 1
-        super(RadioButtons, self).__init__()
+        super().__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.enums = enums
-        self.buttons_box = Gtk.Box.new(orientation, 5)
-        self.label = Gtk.Label.new(label)
-        self.pack_start(self.label, False, True, 0)
-        self.pack_start(self.buttons_box, True, True, 0)
+        if label:
+            self.label = Gtk.Label.new(label)
+            self.attach_all_down(self.label)
         self.radio_buttons = []
         if self.enums:
             self.values = []
         for num, var in enumerate(buttons):
             self.radio_buttons.append(Gtk.RadioButton.new_with_label(
                 None, str(var) if not self.enums else str(var[0])))
-            self.buttons_box.pack_start(self.radio_buttons[num], True, True, 0)
 
             if num > 0:
                 self.radio_buttons[num].join_group(self.radio_buttons[0])
@@ -439,10 +436,13 @@ class RadioButtons(Gtk.Box):
             if self.enums:
                 self.values.append(var[1])
 
-            if tooltip:
-                self.radio_buttons[num].props.tooltip_text = tooltip
+        if orientation == Gtk.Orientation.VERTICAL:
+            self.attach_all_down(*self.radio_buttons)
+        elif orientation == Gtk.Orientation.HORIZONTAL:
+            self.attach_all_right(*self.radio_buttons, row=1)
 
-        self.value = value
+        DataWidget.__init__(self, value,
+                            self.radio_buttons[0], "group-changed")
 
     @property
     def value(self):
