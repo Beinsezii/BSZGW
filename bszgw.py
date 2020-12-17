@@ -342,7 +342,7 @@ Value types must be uniform among keys and among values"""
     # }}}
 
 
-class Entry(Gtk.Box, DataWidget):
+class Entry(Grid, DataWidget):
     # {{{
     """Creates a scrollable text entry widget.
 For self.entry, multi-line uses Gtk.TextView and single-line uses Gtk.Entry.
@@ -353,12 +353,13 @@ Use the text_buffer property to set new buffers instead."""
         super(Entry, self).__init__()
 
         self.__multi_line = multi_line
-        self.props.orientation = Gtk.Orientation.VERTICAL
-        self.label = Gtk.Label.new(label)
-        self.pack_start(self.label, False, True, 0)
+        if label:
+            self.label = Gtk.Label.new(label)
+            self.attach_all_down(self.label)
 
         self.scrolled_window = Gtk.ScrolledWindow.new(None, None)
-        self.pack_start(self.scrolled_window, True, True, 0)
+        self.scrolled_window.props.expand = True
+        self.attach_all_down(self.scrolled_window)
 
         if self.__multi_line:
             self.entry = Gtk.TextView.new()
