@@ -263,7 +263,7 @@ class CheckButton(Gtk.CheckButton, DataWidget):
     # }}}
 
 
-class ComboBox(Gtk.ComboBox):
+class ComboBox(Gtk.ComboBox, DataWidget):
     # {{{
     """Widget for selecting values in a drop-down list.
 Right now basically exclusively made for text. I want to implement more
@@ -271,12 +271,10 @@ ComboBox/CellRenderer/TreeModel features but I'm not sure how to do that
 all in one or if it's even possible. Tempted to rename this ComboBoxText and
 just make new ComboBoxes for other types."""
     def __init__(self, model: Gtk.TreeModel, value,
-                 tooltip: str = None, column: int = 0, id_column: int = 0,
-                 expand: bool = True, show_ids: bool = False, wrap: int = 0):
+                 column: int = 0, id_column: int = 0,
+                 show_ids: bool = False, wrap: int = 0):
         super(ComboBox, self).__init__()
 
-        if tooltip:
-            self.props.tooltip_text = tooltip
         self.props.model = model
 
         self.renderer = Gtk.CellRendererText()
@@ -290,9 +288,7 @@ just make new ComboBoxes for other types."""
 
         self.props.wrap_width = wrap
         self.props.id_column = id_column
-        self.value = value
-        self.initial_value = value
-        self.expand = expand
+        DataWidget.__init__(value, self, "changed")
 
     def new(dictionary: dict, value,
             tooltip: str = None, expand: bool = True,
@@ -310,18 +306,6 @@ Value types must be uniform among keys and among values"""
             model=model, value=value, tooltip=tooltip, expand=expand,
             id_column=1, show_ids=show_ids, wrap=wrap,
         )
-
-    def reset(self):
-        self.value = self.initial_value
-
-    @property
-    def expand(self):
-        return self.__expand
-
-    @expand.setter
-    def expand(self, expand):
-        self.props.hexpand = expand
-        self.__expand = expand
 
     @property
     def value(self):
