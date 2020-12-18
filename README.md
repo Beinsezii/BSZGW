@@ -34,7 +34,7 @@ Brief overview:
  - **Grid** - A Gtk.Grid with extra methods for attaching widgets
    - **GridChild** - a simple struct around a widget that can be fed to Grid's attach
      functions in place of an actual widget to specify more precise placement
- - **Message** - A small function to display a message in a pop-up
+ - **Message** - A small function to display a message in a pop-up with optional buttons
 
 ### MixIns
   - **DataWidget** - Provides some uniform methods and properties for data-entry widgets.
