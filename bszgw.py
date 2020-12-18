@@ -76,7 +76,7 @@ class App(Gtk.Window):
 EXPERIMENTAL"""
     def __init__(self, label: str, widget: Gtk.Widget,
                  width: int = -1, height: int = -1,
-                 hint: Gdk.WindowTypehint = Gdk.WindowTypeHint.NORMAL):
+                 hint: Gdk.WindowTypeHint = Gdk.WindowTypeHint.NORMAL):
         super().__init__()
         self.connect("destroy", Gtk.main_quit)
         self.props.title = label
