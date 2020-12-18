@@ -15,7 +15,6 @@ Brief overview:
  - Widgets are created more 'artistically'
    - The 'new()' method, if present, will create a fully functional widget
      entirely from regular Python types, generating buffers/models as needed
-     Create an entire ComboBox from a dict!
 """
 
 
@@ -23,13 +22,14 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 gi.require_version("Gdk", "3.0")
-from gi.repository import Gdk
+from gi.repository import Gdk  # noqa: F401
 from gi.repository import GObject
 import math
 
 
 # TODO:
-# Settle on App's scope and move it out of experimental
+# figure out why certain widgets dont like to super() self when
+# using the mixin.
 
 
 # ### MIX-INS ### #
@@ -251,11 +251,17 @@ previous child's place."""
     # }}}
 
 
-def Message(message):
+def Message(message: str, buttons: [str] = [],
+            modal=False, close_button=True) -> int:
     # {{{
-    """Opens a pop-op displaying a message."""
-    dialog = Gtk.MessageDialog(text=str(message),
-                               buttons=Gtk.ButtonsType.CLOSE)
+    """Opens a pop-op displaying a message.  Returns the index of the
+button pressed. Buttons may be str or a stock ID.
+If close_button, also appends Gtk.STOCK_CLOSE with a response of -1"""
+    dialog = Gtk.MessageDialog(text=str(message))
+    for n, b in enumerate(buttons):
+        dialog.add_button(b, n)
+    dialog.add_button(Gtk.STOCK_CLOSE, -1)
+    dialog.props.modal = modal
     dialog.run()
     dialog.destroy()
     # }}}

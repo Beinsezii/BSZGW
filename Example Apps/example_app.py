@@ -85,6 +85,7 @@ Entry =
 
     # box = bszgw.AutoBox([[left_side, right_side]])
 
-    app = bszgw.App("App Name", grid, hint=Gdk.WindowTypeHint.DIALOG)
+    app = bszgw.App("App Name", grid)
+    app.props.type_hint = Gdk.WindowTypeHint.DIALOG
 
     app.launch()
