@@ -72,29 +72,30 @@ Also sets reset_value used in reset()"""
 
 class App(Gtk.Window):
     # {{{
-    """DOCSTRING TODO
-EXPERIMENTAL"""
-    def __init__(self, label: str, widget: Gtk.Widget,
-                 width: int = -1, height: int = -1,
-                 hint: Gdk.WindowTypeHint = Gdk.WindowTypeHint.NORMAL):
+    """Simple wrapper around Gtk.Window intended to take a widget then
+launch the Gtk main loop with it."""
+    def __init__(self, title: str, widget: Gtk.Widget,
+                 width: int = -1, height: int = -1):
         super().__init__()
         self.connect("destroy", Gtk.main_quit)
-        self.props.title = label
-        self.props.type_hint = hint
+        self.props.title = title
         self.add(widget)
         self.props.default_width = width
         self.props.default_height = height
 
-    def launch(self, *prelaunch):
+    def launch(self, *prelaunch: [callable, list], show_all=True):
+        """Launches the Gtk main engine, optoinally running prelaunch callables
+after showing all the widgets.
+Prelaunch entries may be a sub-list containing the callable and args.
+If show_all=False, widgets are not shown by default on launch."""
         self.present()
-        self.show_all()
+        if show_all:
+            self.show_all()
         for x in prelaunch:
             if len(x) == 1:
                 x[0]()
-
             else:
                 x[0](*x[1:])
-
         Gtk.main()
     # }}}
 
