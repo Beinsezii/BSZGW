@@ -21,7 +21,7 @@ if __name__ == "__main__":
     log_check = bszgw.CheckButton("Logarithmic", True)
 
     # Creates a Gtk.TreeModel fom a dict
-    combo_box = bszgw.ComboBox.new(
+    combo_box = bszgw.ComboBox.new_dict(
         {"Choice A": "a", "Choice B": "b", "Choice C": "c"}, "a",
     )
 

@@ -292,6 +292,9 @@ class CheckButton(Gtk.CheckButton, DataWidget):
 class ComboBox(Gtk.ComboBox, DataWidget):
     # {{{
     """Widget for selecting values in a drop-down list.
+If id_column == column, it operates on indicies,
+else it operates on the id_column text.
+
 Right now basically exclusively made for text. I want to implement more
 ComboBox/CellRenderer/TreeModel features but I'm not sure how to do that
 all in one or if it's even possible. Tempted to rename this ComboBoxText and
@@ -304,6 +307,7 @@ just make new ComboBoxes for other types."""
         Gtk.ComboBox.__init__(self)
 
         self.props.model = model
+        self.column = column
 
         self.renderer = Gtk.CellRendererText()
         self.pack_start(self.renderer, True)
@@ -318,14 +322,20 @@ just make new ComboBoxes for other types."""
         self.props.id_column = id_column
         DataWidget.__init__(self, value, self, "changed")
 
-    def new(dictionary: dict, value,
-            show_ids: bool = True, wrap: int = 0) -> 'ComboBox':
-        """Creates a new ComboBox from a dictionary.
-Value types must be uniform among keys and among values"""
+    def new(items: [str], value: int, wrap: int = 0) -> 'ComboBox':
+        model = Gtk.ListStore(str)
+        for item in items:
+            model.append([item])
+
+        return ComboBox(
+            model=model, value=value, wrap=wrap
+        )
+
+    def new_dict(dictionary: {str: str}, value: str,
+                 show_ids: bool = True, wrap: int = 0) -> 'ComboBox':
+        """Creates a new ComboBox from a dictionary of strings."""
         # is there a better way to get the first key and val?
-        key_type = type(list(dictionary)[0])
-        val_type = type(dictionary[list(dictionary)[0]])
-        model = Gtk.ListStore(key_type, val_type)
+        model = Gtk.ListStore(str, str)
         for key in dictionary.keys():
             model.append((key, dictionary[key]))
 
@@ -336,11 +346,17 @@ Value types must be uniform among keys and among values"""
 
     @property
     def value(self):
-        return self.props.active_id
+        if self.props.id_column == self.column:
+            return self.props.active
+        else:
+            return self.props.active_id
 
     @value.setter
     def value(self, value):
-        self.props.active_id = value
+        if self.props.id_column == self.column:
+            self.props.active = value
+        else:
+            self.props.active_id = value
     # }}}
 
 
