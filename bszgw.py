@@ -74,9 +74,10 @@ class App(Gtk.Window):
     # {{{
     """DOCSTRING TODO
 EXPERIMENTAL"""
-    def __init__(self, label, widget, width=-1, height=-1,
-                 hint=Gdk.WindowTypeHint.NORMAL):
-        super(App, self).__init__()
+    def __init__(self, label: str, widget: Gtk.Widget,
+                 width: int = -1, height: int = -1,
+                 hint: Gdk.WindowTypehint = Gdk.WindowTypeHint.NORMAL):
+        super().__init__()
         self.connect("destroy", Gtk.main_quit)
         self.props.title = label
         self.props.type_hint = hint
@@ -98,7 +99,9 @@ EXPERIMENTAL"""
     # }}}
 
 
-def AutoBox(widgets: list, vspacing=10, hspacing=10, orientation=1) -> Gtk.Box:
+def AutoBox(
+        widgets: [Gtk.Widget], vspacing: int = 10, hspacing: int = 10,
+        orientation: Gtk.Orientation = Gtk.Orientation.VERTICAL) -> Gtk.Box:
     # {{{
     """Automatically packs widgets into a box with recursion depth.
 Every sub-list inside the main widgets list flips packing orientation.
@@ -244,7 +247,6 @@ previous child's place."""
         self.attach_all(Gtk.DirectionType.UP, *children,
                         column=column, row=row,
                         base_width=base_width, base_height=base_height)
-
     # }}}
 
 
@@ -264,7 +266,7 @@ def Message(message):
 class Button(Gtk.Button):
     # {{{
     """Gtk.Button. Has connect('clicked') built into init."""
-    def __init__(self, label, function, *args):
+    def __init__(self, label: str, function: callable, *args):
         super().__init__(label=label)
         self.connect('clicked', function, *args if args else ())
     # }}}
@@ -273,16 +275,16 @@ class Button(Gtk.Button):
 class CheckButton(Gtk.CheckButton, DataWidget):
     # {{{
     """Basically just a normal GTK checkbutton with the DataWidget mixin"""
-    def __init__(self, label, value):
+    def __init__(self, label: str, value: bool):
         super().__init__(label=label)
         DataWidget.__init__(self, value, self, "toggled")
 
     @property
-    def value(self):
+    def value(self) -> bool:
         return self.props.active
 
     @value.setter
-    def value(self, value):
+    def value(self, value: bool):
         self.props.active = value
     # }}}
 
@@ -298,7 +300,7 @@ just make new ComboBoxes for other types."""
                  column: int = 0, id_column: int = 0,
                  show_ids: bool = False, wrap: int = 0):
         # TODO: genuinely though why is this fucky in some widgets
-        # super(ComboBox, self).__init__()
+        # super().__init__()
         Gtk.ComboBox.__init__(self)
 
         self.props.model = model
@@ -317,7 +319,7 @@ just make new ComboBoxes for other types."""
         DataWidget.__init__(self, value, self, "changed")
 
     def new(dictionary: dict, value,
-            show_ids: bool = True, wrap: int = 0):
+            show_ids: bool = True, wrap: int = 0) -> 'ComboBox':
         """Creates a new ComboBox from a dictionary.
 Value types must be uniform among keys and among values"""
         # is there a better way to get the first key and val?
@@ -337,8 +339,8 @@ Value types must be uniform among keys and among values"""
         return self.props.active_id
 
     @value.setter
-    def value(self, new_value):
-        self.props.active_id = new_value
+    def value(self, value):
+        self.props.active_id = value
     # }}}
 
 
@@ -348,9 +350,9 @@ class Entry(Grid, DataWidget):
 For self.entry, multi-line uses Gtk.TextView and single-line uses Gtk.Entry.
 No .new() method, as the widgets create their own buffers on creation.
 Use the text_buffer property to set new buffers instead."""
-    def __init__(self, value, label: str = "",
-                 multi_line=False, min_width=200, min_height=100):
-        super(Entry, self).__init__()
+    def __init__(self, value: str, label: str = "", multi_line: bool = False,
+                 min_width: int = 200, min_height: int = 100):
+        super().__init__()
 
         self.__multi_line = multi_line
         if label:
@@ -375,46 +377,46 @@ Use the text_buffer property to set new buffers instead."""
         DataWidget.__init__(self, value, self.text_buffer, "changed")
 
     @property
-    def min_height(self):
+    def min_height(self) -> int:
         return self.__min_height
 
     @min_height.setter
-    def min_height(self, min_height):
+    def min_height(self, min_height: int):
         if self.__multi_line:
             self.scrolled_window.props.min_content_height = min_height
         self.__min_height = min_height
 
     @property
-    def min_width(self):
+    def min_width(self) -> int:
         return self.__min_width
 
     @min_width.setter
-    def min_width(self, min_width):
+    def min_width(self, min_width: int):
         self.scrolled_window.props.min_content_width = min_width
         self.__min_width = min_width
 
     @property
-    def text_buffer(self):
+    def text_buffer(self) -> Gtk.TextBuffer:
         return self.entry.props.buffer
 
     @text_buffer.setter
-    def text_buffer(self, text_buffer):
+    def text_buffer(self, text_buffer: Gtk.TextBuffer):
         self.entry.props.buffer = text_buffer
 
     @property
-    def value(self):
+    def value(self) -> str:
         return self.text_buffer.props.text
 
     @value.setter
-    def value(self, new_value):
-        self.text_buffer.props.text = new_value
+    def value(self, value: str):
+        self.text_buffer.props.text = value
     # }}}
 
 
 class RadioButtons(Grid, DataWidget):
     # {{{
     """DOCSTRING TODO"""
-    def __init__(self, buttons, value, label="",
+    def __init__(self, buttons: [str], value: int, label="",
                  orientation=Gtk.Orientation.VERTICAL):
         assert len(buttons) > 1
         super().__init__()
@@ -445,8 +447,8 @@ class RadioButtons(Grid, DataWidget):
                 return self.radio_buttons.index(x)
 
     @value.setter
-    def value(self, index: int):
-        self.radio_buttons[index].set_active(1)
+    def value(self, value: int):
+        self.radio_buttons[value].set_active(1)
     # }}}
 
 
@@ -512,7 +514,7 @@ as you get closer to extreme values."""
             label="",
             digits=0, orientation=Gtk.Orientation.HORIZONTAL,
             spin_accel=0.0, logarithmic=False, log_scale=2,
-            scale_min_size=200):
+            scale_min_size=200) -> 'SpinScale':
 
         return SpinScale(
             adjustment=Gtk.Adjustment.new(value, min_value, max_value,
@@ -561,13 +563,13 @@ de-logarithmicized, accounting for negatives and 0"""
             return -(self.log_scale ** abs(value))
 
     @property
-    def adjustment(self):
+    def adjustment(self) -> Gtk.Adjustment:
         return self.spin_button.props.adjustment
 
     @adjustment.setter
-    def adjustment(self, new_adjust):
-        self.spin_button.props.adjustment = new_adjust
-        self.reset_value = new_adjust.props.value
+    def adjustment(self, adjustment: Gtk.Adjustment):
+        self.spin_button.props.adjustment = adjustment
+        self.reset_value = adjustment.props.value
         self.logarithmic = self.logarithmic  # sets scale adj
 
     @property
@@ -575,9 +577,9 @@ de-logarithmicized, accounting for negatives and 0"""
         return self.spin_button.props.digits
 
     @digits.setter
-    def digits(self, new_decimals: int):
-        self.spin_button.props.digits = new_decimals
-        self.scale.props.digits = new_decimals
+    def digits(self, digits: int):
+        self.spin_button.props.digits = digits
+        self.scale.props.digits = digits
 
     @property
     def logarithmic(self) -> bool:
@@ -623,9 +625,9 @@ de-logarithmicized, accounting for negatives and 0"""
             return int(f'%.{self.digits}f' % (self.adjustment.props.value))
 
     @value.setter
-    def value(self, new_value: float):
-        self.adjustment.props.value = new_value
+    def value(self, value: float):
+        self.adjustment.props.value = value
         if self.logarithmic:
             self.scale.props.adjustment.props.value = \
-                math.log(new_value, self.log_scale)
+                math.log(value, self.log_scale)
     # }}}
