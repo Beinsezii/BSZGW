@@ -323,6 +323,7 @@ just make new ComboBoxes for other types."""
         DataWidget.__init__(self, value, self, "changed")
 
     def new(items: [str], value: int, wrap: int = 0) -> 'ComboBox':
+        """Creates a new ComboBox from a list/tuple of strings"""
         model = Gtk.ListStore(str)
         for item in items:
             model.append([item])
@@ -431,7 +432,8 @@ Use the text_buffer property to set new buffers instead."""
 
 class RadioButtons(Grid, DataWidget):
     # {{{
-    """DOCSTRING TODO"""
+    """Widget for choosing an option from a list.
+Limited alternate to ComboBox"""
     def __init__(self, buttons: [str], value: int, label="",
                  orientation=Gtk.Orientation.VERTICAL):
         assert len(buttons) > 1
@@ -531,6 +533,7 @@ as you get closer to extreme values."""
             digits=0, orientation=Gtk.Orientation.HORIZONTAL,
             spin_accel=0.0, logarithmic=False, log_scale=2,
             scale_min_size=200) -> 'SpinScale':
+        """Creates a new SpinScale, generating the Adjustment from vals"""
 
         return SpinScale(
             adjustment=Gtk.Adjustment.new(value, min_value, max_value,
