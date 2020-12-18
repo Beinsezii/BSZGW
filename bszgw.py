@@ -262,8 +262,9 @@ If close_button, also appends Gtk.STOCK_CLOSE with a response of -1"""
         dialog.add_button(b, n)
     dialog.add_button(Gtk.STOCK_CLOSE, -1)
     dialog.props.modal = modal
-    dialog.run()
+    result = dialog.run()
     dialog.destroy()
+    return result
     # }}}
 
 
