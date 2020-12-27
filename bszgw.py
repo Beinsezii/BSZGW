@@ -83,7 +83,7 @@ launch the Gtk main loop with it."""
         self.props.default_width = width
         self.props.default_height = height
 
-    def launch(self, *prelaunch: [callable, list], show_all=True):
+    def launch(self, *prelaunch: [callable, [callable, list]], show_all=True):
         """Launches the Gtk main engine, optoinally running prelaunch callables
 after showing all the widgets.
 Prelaunch entries may be a sub-list containing the callable and args.
@@ -536,11 +536,17 @@ as you get closer to extreme values."""
         DataWidget.__init__(self, self.adjustment.props.value,
                             self.adjustment, 'value-changed')
 
-    def new(value, min_value, max_value, step_increment, page_increment,
-            label="",
-            digits=0, orientation=Gtk.Orientation.HORIZONTAL,
-            spin_accel=0.0, logarithmic=False, log_scale=2,
-            scale_min_size=200) -> 'SpinScale':
+    def new(
+        value: float, min_value: float, max_value: float,
+        step_increment: float, page_increment: float,
+        label: str = "",
+        digits: int = 0,
+        orientation: Gtk.Orientation = Gtk.Orientation.HORIZONTAL,
+        spin_accel: float = 0.0,
+        logarithmic: bool = False,
+        log_scale: float = 2,
+        scale_min_size: int = 200,
+    ) -> 'SpinScale':
         """Creates a new SpinScale, generating the Adjustment from vals"""
 
         return SpinScale(
