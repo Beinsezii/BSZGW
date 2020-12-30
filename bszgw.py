@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-"""BeinSeZii Gtk Wrapper
+"""BeinSeZii Gtk Wrapper 1.0.1
 Provides replacements for common GTK widgets intended to make dialog and
 simple program creation take significantly less effort. Basically I got tired
 of 70% of my lines being UI code and thought 'how can I be lazier'
