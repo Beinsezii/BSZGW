@@ -385,15 +385,16 @@ Use the text_buffer property to set new buffers instead."""
             self.attach_all_down(self.label)
 
         self.scrolled_window = Gtk.ScrolledWindow.new(None, None)
-        self.scrolled_window.props.expand = True
         self.attach_all_down(self.scrolled_window)
 
         if self.__multi_line:
             self.entry = Gtk.TextView.new()
+            self.scrolled_window.props.expand = True
 
         else:
             self.entry = Gtk.Entry.new()
             self.scrolled_window.props.vscrollbar_policy = Gtk.PolicyType.NEVER
+            self.scrolled_window.props.hexpand = True
 
         self.scrolled_window.add(self.entry)
 
